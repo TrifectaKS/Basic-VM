@@ -1,1 +1,0 @@
-g++ main.cpp -Iinclude -Isrc -lraylib -lGL -lm -lpthread -ldl -lrt -lX11

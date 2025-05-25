@@ -3,7 +3,7 @@
         {
             "type": "cppbuild",
             "label": "C/C++: g++ build active file",
-            "command": "/usr/bin/g++", //Change path to g++ or gcc compiler
+            "command": "/usr/bin/gcc", //Change path to g++ or gcc compiler
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",

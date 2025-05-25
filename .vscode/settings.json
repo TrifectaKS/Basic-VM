@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "compare": "cpp"
+    },
+    "cortex-debug.variableUseNaturalFormat": false
+}

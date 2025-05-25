@@ -1,1 +1,0 @@
-cc main.c -Iinclude -Isrc -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
