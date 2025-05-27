@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        "compare": "cpp"
+        "compare": "cpp",
+        "instructions.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }

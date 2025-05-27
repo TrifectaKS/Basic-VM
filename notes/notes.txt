@@ -1,0 +1,2 @@
+Instructions will always follow this order
+opcode -> funct3 -> funct4 -> rd -> rs1 -> rs2 -> imm
