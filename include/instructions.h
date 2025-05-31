@@ -28,10 +28,10 @@ typedef struct
 
 // Instruction data
 Instruction instructions[] = {
-    {"ADD", 0x1, 0x0, 0x0, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
-    {"SUB", 0x1, 0x0, 0x1, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
-    {"MUL", 0x1, 0x0, 0x2, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
-    {"DIV", 0x1, 0x0, 0x3, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
+    {"ADD", 0x1, 0x2, 0x0, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
+    {"SUB", 0x1, 0x4, 0x1, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
+    {"MUL", 0x1, 0x3, 0x2, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
+    {"DIV", 0x1, 0x5, 0x3, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
 };
 
 Instruction* get_instruction_by_alias(char *instructionStr)
