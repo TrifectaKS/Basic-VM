@@ -33,9 +33,10 @@ AssembledOperation assemble_arithmetic_0(const Instruction *instruction,
   // TODO: This depends on instruction
   int count = sscanf(asmLine, "%s %[^,], %[^,], %s", instructionStr, rdStr,
                      rs1Str, rs2Str);
-
-  assert(count > 0);
-  return (AssembledOperation){.hasValue = true};
+  assert(count == 4);
+  if(count != 4){
+    return (AssembledOperation){.hasValue = false};
+  }
 
   // opcode(4)/funct3(3)/funct4(4)/rd(4)/rs1(4)/rs2(4) in uint32_t
   uint32_t rd = register_to_byte(rdStr);   // 4 bits
@@ -51,7 +52,7 @@ AssembledOperation assemble_arithmetic_0(const Instruction *instruction,
   insOp |= (rs2 & 0b00001111) << 20;                // bits 20–23 (rs2)
 
 #ifdef DEBUG
-  printf("Parsed Assembly: ");
+  printf("Parsed Assembly \n");
   print_binary32(insOp);
 #endif
 
