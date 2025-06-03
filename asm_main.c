@@ -2,12 +2,12 @@
 #include "debug_utils.h"
 #include "instructions.h"
 #include "rom_writer.h"
+#include <assert.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
-#include <stdbool.h>
-#include <assert.h>
 
 uint8_t register_to_byte(const char *reg) {
   if (reg[0] == 'r' || reg[0] == 'R') {
@@ -26,7 +26,7 @@ typedef struct {
 } AssembledOperation;
 
 AssembledOperation assemble_arithmetic_0(const Instruction *instruction,
-                             const char *asmLine) {
+                                         const char *asmLine) {
   char instructionStr[10];
   char rdStr[5], rs1Str[5], rs2Str[5];
 
@@ -34,13 +34,13 @@ AssembledOperation assemble_arithmetic_0(const Instruction *instruction,
   int count = sscanf(asmLine, "%s %[^,], %[^,], %s", instructionStr, rdStr,
                      rs1Str, rs2Str);
   assert(count == 4);
-  if(count != 4){
+  if (count != 4) {
     return (AssembledOperation){.hasValue = false};
   }
 
   // opcode(4)/funct3(3)/funct4(4)/rd(4)/rs1(4)/rs2(4) in uint32_t
   uint32_t rd = register_to_byte(rdStr);   // 4 bits
-  uint32_t rs1 =register_to_byte(rs1Str); // 4 bits
+  uint32_t rs1 = register_to_byte(rs1Str); // 4 bits
   uint32_t rs2 = register_to_byte(rs2Str); // 4 bits
   uint32_t insOp = 0;
 
@@ -80,19 +80,16 @@ int main() {
     printf("----------------\n%s\n", asmLineBuffer);
     Instruction *instruction = get_instruction_by_asm(asmLineBuffer);
 
-    uint8_t opfunct3 = (instruction->opcode & 0b00011111) << 3 |
-                       (instruction->funct3 & 0b00000111);
-
-    switch (opfunct3) {
+    switch (instruction->opcode_funct3) {
     case 0x08: {
-        result = assemble_arithmetic_0(instruction, asmLineBuffer);
-      break; 
+      result = assemble_arithmetic_0(instruction, asmLineBuffer);
+      break;
     }
     };
 
     assert(result.hasValue == true);
 
-    if(!result.hasValue){
+    if (!result.hasValue) {
       perror("Error assembling line: ");
       perror(asmLineBuffer);
       return 1;
