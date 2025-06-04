@@ -1,3 +1,6 @@
+#ifndef ROM_WRITER_H
+#define ROM_WRITER_H
+
 #include "instructions.h"
 
 #ifdef DEBUG
@@ -12,9 +15,11 @@ typedef struct {
 BytePack pack_bytes(Instruction* instruction, uint32_t result) {
     BytePack pack = {0};
     pack.count = instruction->length / 8;
-    for (uint8_t b = instruction->length - 8, i = 0; i < pack.count; b -= 8, i++) {
-        pack.bytes[i] = (result >> b) & 0xFF;
+
+    for (uint8_t i = 0; i < pack.count; i++) {
+        pack.bytes[i] = (result >> (i * 8)) & 0xFF;  // LSB first
     }
+
     return pack;
 }
 
@@ -28,3 +33,5 @@ void write_to_file(FILE* romFile, BytePack pack){
 
     fwrite(pack.bytes,1,pack.count,romFile);
 }
+
+#endif

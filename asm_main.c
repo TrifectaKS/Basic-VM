@@ -1,63 +1,11 @@
 #define DEBUG
+
 #include "debug_utils.h"
 #include "instructions.h"
 #include "rom_writer.h"
+#include "assemble.h"
 #include <assert.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <strings.h>
 
-uint8_t register_to_byte(const char *reg) {
-  if (reg[0] == 'r' || reg[0] == 'R') {
-    int value = atoi(reg + 1);
-    if (value >= 0 && value <= 15) {
-      return value;
-    }
-  }
-
-  return -1;
-}
-
-typedef struct {
-  uint32_t value;
-  bool hasValue;
-} AssembledOperation;
-
-AssembledOperation assemble_arithmetic_0(const Instruction *instruction,
-                                         const char *asmLine) {
-  char instructionStr[10];
-  char rdStr[5], rs1Str[5], rs2Str[5];
-
-  // TODO: This depends on instruction
-  int count = sscanf(asmLine, "%s %[^,], %[^,], %s", instructionStr, rdStr,
-                     rs1Str, rs2Str);
-  assert(count == 4);
-  if (count != 4) {
-    return (AssembledOperation){.hasValue = false};
-  }
-
-  // opcode(4)/funct3(3)/funct4(4)/rd(4)/rs1(4)/rs2(4) in uint32_t
-  uint32_t rd = register_to_byte(rdStr);   // 4 bits
-  uint32_t rs1 = register_to_byte(rs1Str); // 4 bits
-  uint32_t rs2 = register_to_byte(rs2Str); // 4 bits
-  uint32_t insOp = 0;
-
-  insOp |= (instruction->funct3 & 0b00000111);      // bits 0–2 (funct3)
-  insOp |= (instruction->opcode & 0b00011111) << 3; // bits 3–7 (opcode)
-  insOp |= (instruction->funct4 & 0b00001111) << 8; // bits 8–11 (funct4)
-  insOp |= (rd & 0b00001111) << 12;                 // bits 12–15 (rd)
-  insOp |= (rs1 & 0b00001111) << 16;                // bits 16–19 (rs1)
-  insOp |= (rs2 & 0b00001111) << 20;                // bits 20–23 (rs2)
-
-#ifdef DEBUG
-  printf("Parsed Assembly \n");
-  print_binary32(insOp);
-#endif
-
-  return (AssembledOperation){.value = insOp, .hasValue = true};
-}
 
 int main() {
   FILE *asmFile = fopen("roms/rom.asm", "r");
@@ -82,7 +30,19 @@ int main() {
 
     switch (instruction->opcode_funct3) {
     case 0x08: {
-      result = assemble_arithmetic_0(instruction, asmLineBuffer);
+      result = assemble_arithmetic(instruction, asmLineBuffer);
+      break;
+    }
+    case 0x10:
+    case 0x11:
+    case 0x12:
+    case 0x13:
+    case 0x14: {
+      result = assemble_immediates(instruction, asmLineBuffer);
+      break;
+    }
+    case 0x18: {
+      result = assemble_upper_immediates(instruction, asmLineBuffer);
       break;
     }
     };
