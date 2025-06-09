@@ -161,4 +161,41 @@ AssembledOperation assemble_upper_immediates(const Instruction *instruction,
   return (AssembledOperation){.value = insOp, .hasValue = true};
 }
 
+AssembledOperation assemble_stores(const Instruction *instruction,
+                                       const char *asmLine) {
+  char instructionStr[20];
+  char rs1Str[5], rs2Str[5], immStr[10];
+
+  // TODO: This depends on instruction
+  int count = sscanf(asmLine, "%s %[^,], %[^,], %s", instructionStr, rs1Str,
+                     rs2Str, immStr);
+  assert(count == 4);
+  if (count != 4) {
+    return (AssembledOperation){.hasValue = false};
+  }
+
+  // opcode(4)/funct3(3)/funct4(4)/rd(4)/rs1(4)/rs2(4) in uint32_t
+  uint32_t rs1 = register_to_byte(rs1Str);   // 4 bits
+  uint32_t rs2 = register_to_byte(rs2Str); // 4 bits
+  uint32_t imm = imm_to_word(immStr);      // 16 bits
+  uint32_t insOp = 0;
+
+  insOp |= (instruction->funct3 & 0b00000111); // bits 0–2 (funct3)
+  print_binary32(insOp);
+  insOp |= (instruction->opcode & 0b00011111) << 3; // bits 3–7 (opcode)
+  print_binary32(insOp);
+  insOp |= (rs1 & 0b00001111) << 8; // bits 8–11 (rd)
+  print_binary32(insOp);
+  insOp |= (rs2 & 0b00001111) << 12; // bits 12–16 (rs1)
+  print_binary32(insOp);
+  insOp |= imm << 16; // bits 16–31 (imm)
+
+#ifdef DEBUG
+  printf("Parsed Assembly \n");
+  print_binary32(insOp);
+#endif
+
+  return (AssembledOperation){.value = insOp, .hasValue = true};
+}
+
 #endif

@@ -3,3 +3,6 @@ LOAD r6, r2, 0xF0DF
 LLUI r15, 0xFccF
 HLUI r15, 0xFaeF
 LAUIPC r14, 0xF3dF
+SB r1, r2, 0xFF
+SH r1, r2, 0xFFFF
+SW r1, r2, 0xFFFF

@@ -45,6 +45,11 @@ Instruction instructions[] = {
     {"LLUI",    0x03, 0x00, 0x18, 0x00, 32, BITS_4, BITS_4, BITS_0, BITS_0, BITS_16},
     {"HLUI",    0x03, 0x00, 0x18, 0x01, 32, BITS_4, BITS_4, BITS_0, BITS_0, BITS_16},
     {"LAUIPC",  0x03, 0x00, 0x18, 0x02, 32, BITS_4, BITS_4, BITS_0, BITS_0, BITS_16},
+
+    // Stores
+    {"SB",  0x04, 0x00, 0x20, 0, 32, BITS_0, BITS_0, BITS_4, BITS_4, BITS_16},
+    {"SH", 0x04, 0x01, 0x21, 0, 32, BITS_0, BITS_0, BITS_4, BITS_4, BITS_16},
+    {"SW",  0x04, 0x02, 0x22, 0, 32, BITS_0, BITS_0, BITS_4, BITS_4, BITS_16},
 };
 
 Instruction *get_instruction_by_alias(char *instructionStr) {

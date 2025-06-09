@@ -1,11 +1,10 @@
 #define DEBUG
 
+#include "assemble.h"
 #include "debug_utils.h"
 #include "instructions.h"
 #include "rom_writer.h"
-#include "assemble.h"
 #include <assert.h>
-
 
 int main() {
   FILE *asmFile = fopen("roms/rom.asm", "r");
@@ -43,6 +42,12 @@ int main() {
     }
     case 0x18: {
       result = assemble_upper_immediates(instruction, asmLineBuffer);
+      break;
+    }
+    case 0x20:
+    case 0x21:
+    case 0x22: {
+      result = assemble_stores(instruction, asmLineBuffer);
       break;
     }
     };
