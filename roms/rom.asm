@@ -6,3 +6,4 @@ LAUIPC r14, 0xF3dF
 SB r1, r2, 0xFF
 SH r1, r2, 0xFFFF
 SW r1, r2, 0xFFFF
+BGE R4, r7, 0xFF00

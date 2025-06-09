@@ -19,37 +19,41 @@ typedef struct {
   uint8_t opcode_funct3;
   uint8_t funct4;
   uint8_t length;
-  uint8_t has_funct4;
-  uint8_t rd;
-  uint8_t rs1;
-  uint8_t rs2;
-  uint8_t imm;
 } Instruction;
 
 // Instruction data
 Instruction instructions[] = {
     // Arithmetic
-    {"ADD", 0x01, 0x00, 0x08, 0x00, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
-    {"SUB", 0x01, 0x00, 0x08, 0x01, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
-    {"MUL", 0x01, 0x00, 0x08, 0x02, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
-    {"DIV", 0x01, 0x00, 0x08, 0x03, 24, BITS_4, BITS_4, BITS_4, BITS_4, BITS_0},
+    {"ADD", 0x01, 0x00, 0x08, 0x00, 24},
+    {"SUB", 0x01, 0x00, 0x08, 0x01, 24},
+    {"MUL", 0x01, 0x00, 0x08, 0x02, 24},
+    {"DIV", 0x01, 0x00, 0x08, 0x03, 24},
 
     // Immediates
-    {"ADDI", 0x02, 0x01, 0x10, 0, 32, BITS_0, BITS_4, BITS_4, BITS_0, BITS_16},
-    {"SUBI", 0x02, 0x02, 0x11, 0, 32, BITS_0, BITS_4, BITS_4, BITS_0, BITS_16},
-    {"MULI", 0x02, 0x03, 0x12, 0, 32, BITS_0, BITS_4, BITS_4, BITS_0, BITS_16},
-    {"DIVI", 0x02, 0x04, 0x13, 0, 32, BITS_0, BITS_4, BITS_4, BITS_0, BITS_16},
-    {"LOAD", 0x02, 0x05, 0x14, 0, 32, BITS_0, BITS_4, BITS_4, BITS_0, BITS_16},
+    {"ADDI", 0x02, 0x01, 0x10, 0, 32},
+    {"SUBI", 0x02, 0x02, 0x11, 0, 32 },
+    {"MULI", 0x02, 0x03, 0x12, 0, 32 },
+    {"DIVI", 0x02, 0x04, 0x13, 0, 32 },
+    {"LOAD", 0x02, 0x05, 0x14, 0, 32 },
 
     // Upper Immediates
-    {"LLUI",    0x03, 0x00, 0x18, 0x00, 32, BITS_4, BITS_4, BITS_0, BITS_0, BITS_16},
-    {"HLUI",    0x03, 0x00, 0x18, 0x01, 32, BITS_4, BITS_4, BITS_0, BITS_0, BITS_16},
-    {"LAUIPC",  0x03, 0x00, 0x18, 0x02, 32, BITS_4, BITS_4, BITS_0, BITS_0, BITS_16},
+    {"LLUI",    0x03, 0x00, 0x18, 0x00, 32 },
+    {"HLUI",    0x03, 0x00, 0x18, 0x01, 32 },
+    {"LAUIPC",  0x03, 0x00, 0x18, 0x02, 32 },
 
     // Stores
-    {"SB",  0x04, 0x00, 0x20, 0, 32, BITS_0, BITS_0, BITS_4, BITS_4, BITS_16},
-    {"SH", 0x04, 0x01, 0x21, 0, 32, BITS_0, BITS_0, BITS_4, BITS_4, BITS_16},
-    {"SW",  0x04, 0x02, 0x22, 0, 32, BITS_0, BITS_0, BITS_4, BITS_4, BITS_16},
+    {"SB",  0x04, 0x00, 0x20, 0, 32 },
+    {"SH",  0x04, 0x01, 0x21, 0, 32 },
+    {"SW",  0x04, 0x02, 0x22, 0, 32 },
+
+    // Branches
+    {"BEQ",  0x05, 0x00, 0x28, 0, 32 },
+    {"BNE",  0x05, 0x01, 0x29, 0, 32 },
+    {"BLT",  0x05, 0x02, 0x2A, 0, 32 },
+    {"BGT",  0x05, 0x03, 0x2B, 0, 32 },
+    {"BLE",  0x05, 0x04, 0x2C, 0, 32 },
+    {"BGE",  0x05, 0x05, 0x2D, 0, 32 },
+    
 };
 
 Instruction *get_instruction_by_alias(char *instructionStr) {

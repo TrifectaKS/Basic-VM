@@ -46,8 +46,14 @@ int main() {
     }
     case 0x20:
     case 0x21:
-    case 0x22: {
-      result = assemble_stores(instruction, asmLineBuffer);
+    case 0x22:
+    case 0x28:
+    case 0x29:
+    case 0x2A:
+    case 0x2B:
+    case 0x2C:
+    case 0x2D: {
+      result = assemble_stores_branches(instruction, asmLineBuffer);
       break;
     }
     };

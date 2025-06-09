@@ -161,7 +161,7 @@ AssembledOperation assemble_upper_immediates(const Instruction *instruction,
   return (AssembledOperation){.value = insOp, .hasValue = true};
 }
 
-AssembledOperation assemble_stores(const Instruction *instruction,
+AssembledOperation assemble_stores_branches(const Instruction *instruction,
                                        const char *asmLine) {
   char instructionStr[20];
   char rs1Str[5], rs2Str[5], immStr[10];
