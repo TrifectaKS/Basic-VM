@@ -30,12 +30,12 @@ int main() {
     Instruction *instruction = get_instruction_by_asm(asmLineBuffer);
 
     switch (instruction->opcode_funct3) {
-    case 0x00: // Null 
+    case 0x00: // NULL 
         {
       printf("NULL line detected on line %d\n", line);
       continue;
     }
-    case 0x08: // Arithmetic
+    case 0x08: // ARITHMETIC
     {
       result = assemble_arithmetic(instruction, asmLineBuffer);
       break;
@@ -44,9 +44,12 @@ int main() {
     case 0x11:
     case 0x12:
     case 0x13:
-    case 0x14: // Immediates
+    case 0x14: // IMMEDIATES
+    case 0x38:
+    case 0x39:
+    case 0x3A: // LOADS
     {
-      result = assemble_immediates(instruction, asmLineBuffer);
+      result = assemble_immediates_loads(instruction, asmLineBuffer);
       break;
     }
     case 0x18: // UPPER IMMEDIATES
@@ -68,6 +71,7 @@ int main() {
       result = assemble_stores_branches(instruction, asmLineBuffer);
       break;
     }
+    {}
     };
 
     assert(result.hasValue == true);

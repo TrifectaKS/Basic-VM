@@ -23,26 +23,36 @@ uint8_t register_to_byte(const char *reg) {
   return 0x0;
 }
 
-uint16_t imm_to_word(const char *immStr) {
-  size_t len = strlen(immStr);
-  if (len >= 4) {
-    // Extract the string inside the quotes
-    char number_str[7] = {0}; // max "0xFFFF" + null
-    strncpy(number_str, immStr, len);
-    number_str[len] = '\0'; // ensure null-terminated
+uint16_t imm_to_word_unsigned(const char *immStr) {
+    if (immStr == NULL || *immStr == '\0') return 0x0000;
 
-    // Validate hex prefix
-    printf("%s\n", number_str);
-    if (strncmp(number_str, "0x", 2) == 0 ||
-        strncmp(number_str, "0X", 2) == 0) {
-      char *endptr = NULL;
-      uint16_t value = strtol(number_str, &endptr, 16);
-      if (*endptr == '\0' && value >= 0 && value <= 0xFFFF) {
+    char *endptr = NULL;
+    unsigned long value = strtoul(immStr, &endptr, 0); // base 0: auto detect decimal or hex
+
+    // Check if whole string was parsed and value fits uint16_t range
+    if (*endptr == '\0' && value <= 0xFFFF) {
         return (uint16_t)value;
-      }
     }
-  }
-  return 0x0000; // Invalid input or out of range
+
+    return 0x0000; // Invalid input or out of range
+}
+
+uint16_t imm_to_word_signed(const char *immStr) {
+    size_t len = strlen(immStr);
+    if (len == 0) return 0x0000;
+
+    // Use strtol to parse signed integer automatically detecting base
+    // strtol handles optional +/- sign and "0x" prefix for hex
+    char *endptr = NULL;
+    int64_t value = strtol(immStr, &endptr, 0); // base 0 = auto detect decimal or hex
+
+    // Check if whole string was parsed and value fits int16_t range
+    if (*endptr == '\0' && value >= -32768 && value <= 32767) {
+        // Return as uint16_t preserving bit pattern
+        return (uint16_t)(int16_t)value;
+    }
+
+    return 0x0000; // Invalid input or out of range
 }
 
 typedef struct {
@@ -89,7 +99,7 @@ AssembledOperation assemble_arithmetic(const Instruction *instruction,
   return (AssembledOperation){.value = insOp, .hasValue = true};
 }
 
-AssembledOperation assemble_immediates(const Instruction *instruction,
+AssembledOperation assemble_immediates_loads(const Instruction *instruction,
                                        const char *asmLine) {
   char instructionStr[20];
   char rdStr[5], rs1Str[5], immStr[10];
@@ -105,7 +115,7 @@ AssembledOperation assemble_immediates(const Instruction *instruction,
   // opcode(4)/funct3(3)/funct4(4)/rd(4)/rs1(4)/rs2(4) in uint32_t
   uint32_t rd = register_to_byte(rdStr);   // 4 bits
   uint32_t rs1 = register_to_byte(rs1Str); // 4 bits
-  uint32_t imm = imm_to_word(immStr);      // 16 bits
+  uint32_t imm = imm_to_word_unsigned(immStr);      // 16 bits
   uint32_t insOp = 0;
 
   insOp |= (instruction->funct3 & 0b00000111); // bits 0–2 (funct3)
@@ -140,7 +150,7 @@ AssembledOperation assemble_upper_immediates_jumps(const Instruction *instructio
 
   // opcode(4)/funct3(3)/funct4(4)/rd(4)/rs1(4)/rs2(4) in uint32_t
   uint32_t rd = register_to_byte(rdStr);   // 4 bits
-  uint32_t imm = imm_to_word(immStr);      // 16 bits
+  uint32_t imm = imm_to_word_unsigned(immStr);      // 16 bits
   uint32_t insOp = 0;
 
   insOp |= (instruction->funct3 & 0b00000111); // bits 0–2 (funct3)
@@ -177,7 +187,7 @@ AssembledOperation assemble_stores_branches(const Instruction *instruction,
   // opcode(4)/funct3(3)/funct4(4)/rd(4)/rs1(4)/rs2(4) in uint32_t
   uint32_t rs1 = register_to_byte(rs1Str);   // 4 bits
   uint32_t rs2 = register_to_byte(rs2Str); // 4 bits
-  uint32_t imm = imm_to_word(immStr);      // 16 bits
+  uint32_t imm = imm_to_word_unsigned(immStr);      // 16 bits
   uint32_t insOp = 0;
 
   insOp |= (instruction->funct3 & 0b00000111); // bits 0–2 (funct3)
