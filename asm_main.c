@@ -22,13 +22,21 @@ int main() {
 
   char asmLineBuffer[256];
   AssembledOperation result;
+  uint32_t program_counter = 0;
+  uint32_t line = 1;
   // Check if the file was opened successfully.
   while (fgets(asmLineBuffer, sizeof(asmLineBuffer), asmFile)) {
     printf("----------------\n%s\n", asmLineBuffer);
     Instruction *instruction = get_instruction_by_asm(asmLineBuffer);
 
     switch (instruction->opcode_funct3) {
-    case 0x08: {
+    case 0x00: // Null 
+        {
+      printf("NULL line detected on line %d\n", line);
+      continue;
+    }
+    case 0x08: // Arithmetic
+    {
       result = assemble_arithmetic(instruction, asmLineBuffer);
       break;
     }
@@ -36,12 +44,15 @@ int main() {
     case 0x11:
     case 0x12:
     case 0x13:
-    case 0x14: {
+    case 0x14: // Immediates
+    {
       result = assemble_immediates(instruction, asmLineBuffer);
       break;
     }
-    case 0x18: {
-      result = assemble_upper_immediates(instruction, asmLineBuffer);
+    case 0x18: // UPPER IMMEDIATES
+    case 0x31: // JUMPS
+    {
+      result = assemble_upper_immediates_jumps(instruction, asmLineBuffer);
       break;
     }
     case 0x20:
@@ -52,7 +63,8 @@ int main() {
     case 0x2A:
     case 0x2B:
     case 0x2C:
-    case 0x2D: {
+    case 0x2D: // BRANCHES
+    {
       result = assemble_stores_branches(instruction, asmLineBuffer);
       break;
     }
@@ -68,6 +80,9 @@ int main() {
 
     BytePack pack = pack_bytes(instruction, result.value);
     write_to_file(romFile, pack);
+
+    line++;
+    program_counter += instruction->length/8;
   }
 
   // Close files

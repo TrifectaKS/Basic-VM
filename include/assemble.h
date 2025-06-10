@@ -126,7 +126,7 @@ AssembledOperation assemble_immediates(const Instruction *instruction,
   return (AssembledOperation){.value = insOp, .hasValue = true};
 }
 
-AssembledOperation assemble_upper_immediates(const Instruction *instruction,
+AssembledOperation assemble_upper_immediates_jumps(const Instruction *instruction,
                                              const char *asmLine) {
   char instructionStr[20];
   char rdStr[5], immStr[10];

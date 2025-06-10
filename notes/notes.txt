@@ -1,2 +1,9 @@
 Instructions will always follow this order
 opcode -> funct3 -> funct4 -> rd -> rs1 -> rs2 -> imm
+
+---------------
+TODO: 
+[] Register 0 is hardwired to 0
+[] Functions/label assembly
+[] Use https://github.com/troydhanson/uthash/blob/master/src/uthash.h for hashing to make better data structure
+
