@@ -6,16 +6,145 @@
 #include "rom_writer.h"
 #include <assert.h>
 
-int main() {
+AssembledOperation handle_funct3_artihmetic(Instruction *instruction, char asmLineBuffer[256])
+{
+  switch (instruction->funct3)
+  {
+  case 0x00:
+  {
+    return assemble_arithmetic(instruction, asmLineBuffer);
+  }
+  }
+}
+
+AssembledOperation handle_funct3_immediates(Instruction *instruction, char asmLineBuffer[256])
+{
+  switch (instruction->funct3)
+  {
+  case 0x00:
+  case 0x01:
+  case 0x02:
+  case 0x03:
+  {
+    return assemble_immediates_loads(instruction, asmLineBuffer);
+  }
+  }
+}
+
+AssembledOperation handle_funct3_upper_immediates(Instruction *instruction, char asmLineBuffer[256])
+{
+  switch (instruction->funct3)
+  {
+  case 0x00:
+  {
+    return assemble_upper_immediates_jumps(instruction, asmLineBuffer);
+  }
+  }
+}
+
+AssembledOperation handle_funct3_stores(Instruction *instruction, char asmLineBuffer[256])
+{
+  switch (instruction->funct3)
+  {
+  case 0x00:
+  case 0x01:
+  case 0x02:
+  {
+    return assemble_stores_branches(instruction, asmLineBuffer);
+  }
+  }
+}
+
+AssembledOperation handle_funct3_branches(Instruction *instruction, char asmLineBuffer[256])
+{
+  switch (instruction->funct3)
+  {
+  case 0x00:
+  case 0x01:
+  case 0x02:
+  case 0x03:
+  case 0x04:
+  case 0x05:
+  {
+    return assemble_stores_branches(instruction, asmLineBuffer);
+  }
+  }
+}
+
+AssembledOperation handle_funct3_jumps(Instruction *instruction, char asmLineBuffer[256])
+{
+  switch (instruction->funct3)
+  {
+  case 0x00:
+  {
+    return assemble_upper_immediates_jumps(instruction, asmLineBuffer);
+  }
+  }
+}
+
+AssembledOperation handle_funct3_loads(Instruction *instruction, char asmLineBuffer[256])
+{
+  switch (instruction->funct3)
+  {
+  case 0x00:
+  case 0x01:
+  case 0x02:
+  {
+    return assemble_immediates_loads(instruction, asmLineBuffer);
+  }
+  }
+}
+
+AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[256])
+{
+  switch (instruction->opcode)
+  {
+  case 0x01:
+  {
+    return handle_funct3_artihmetic(instruction, asmLineBuffer);
+  }
+  case 0x02:
+  {
+    return handle_funct3_immediates(instruction, asmLineBuffer);
+  }
+  case 0x03:
+  {
+    return handle_funct3_upper_immediates(instruction, asmLineBuffer);
+  }
+  case 0x04:
+  {
+    return handle_funct3_stores(instruction, asmLineBuffer);
+  }
+  case 0x05:
+  {
+    return handle_funct3_branches(instruction, asmLineBuffer);
+  }
+  case 0x06:
+  {
+    return handle_funct3_jumps(instruction, asmLineBuffer);
+  }
+  case 0x07:
+  {
+    return handle_funct3_loads(instruction, asmLineBuffer);
+  }
+  default:
+    return InvalidOperation;
+  }
+}
+
+int main()
+{
   FILE *asmFile = fopen("roms/rom.asm", "r");
   FILE *romFile = fopen("roms/rom.bin", "wb");
 
-  if (asmFile == NULL) {
+  if (asmFile == NULL)
+  {
     perror("Error opening .asm file");
     return 1;
   }
 
-  if (romFile == NULL) {
+  if (romFile == NULL)
+  {
     perror("Error opening .rom file");
     return 1;
   }
@@ -25,58 +154,28 @@ int main() {
   uint32_t program_counter = 0;
   uint32_t line = 1;
   // Check if the file was opened successfully.
-  while (fgets(asmLineBuffer, sizeof(asmLineBuffer), asmFile)) {
+  while (fgets(asmLineBuffer, sizeof(asmLineBuffer), asmFile))
+  {
     printf("----------------\n%s\n", asmLineBuffer);
     Instruction *instruction = get_instruction_by_asm(asmLineBuffer);
 
-    switch (instruction->opcode_funct3) {
-    case 0x00: // NULL 
-        {
+    switch (instruction->opcode_funct3)
+    {
+    case 0x00: // NULL - Can't parse line
+    {
       printf("NULL line detected on line %d\n", line);
       continue;
     }
-    case 0x08: // ARITHMETIC
+    default:
     {
-      result = assemble_arithmetic(instruction, asmLineBuffer);
-      break;
+      result = handle_opcode(instruction, asmLineBuffer);
     }
-    case 0x10:
-    case 0x11:
-    case 0x12:
-    case 0x13:
-    case 0x14: // IMMEDIATES
-    case 0x38:
-    case 0x39:
-    case 0x3A: // LOADS
-    {
-      result = assemble_immediates_loads(instruction, asmLineBuffer);
-      break;
-    }
-    case 0x18: // UPPER IMMEDIATES
-    case 0x31: // JUMPS
-    {
-      result = assemble_upper_immediates_jumps(instruction, asmLineBuffer);
-      break;
-    }
-    case 0x20:
-    case 0x21:
-    case 0x22:
-    case 0x28:
-    case 0x29:
-    case 0x2A:
-    case 0x2B:
-    case 0x2C:
-    case 0x2D: // BRANCHES
-    {
-      result = assemble_stores_branches(instruction, asmLineBuffer);
-      break;
-    }
-    {}
     };
 
     assert(result.hasValue == true);
 
-    if (!result.hasValue) {
+    if (!result.hasValue)
+    {
       perror("Error assembling line: ");
       perror(asmLineBuffer);
       return 1;
@@ -86,7 +185,7 @@ int main() {
     write_to_file(romFile, pack);
 
     line++;
-    program_counter += instruction->length/8;
+    program_counter += instruction->length / 8;
   }
 
   // Close files

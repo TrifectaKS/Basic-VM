@@ -60,6 +60,8 @@ typedef struct {
   bool hasValue;
 } AssembledOperation;
 
+const AssembledOperation InvalidOperation = {.value = 0, .hasValue = false};
+
 AssembledOperation assemble_arithmetic(const Instruction *instruction,
                                        const char *asmLine) {
   char instructionStr[10];
