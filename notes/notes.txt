@@ -6,4 +6,4 @@ TODO:
 [] Register 0 is hardwired to 0
 [] Functions/label assembly
 [] Use https://github.com/troydhanson/uthash/blob/master/src/uthash.h for hashing to make better data structure
-
+[] Register 1 is 
