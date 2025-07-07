@@ -1,7 +1,6 @@
 #define DEBUG
 
 #include "assemble.h"
-#include "debug_utils.h"
 #include "instructions.h"
 #include "rom_writer.h"
 #include <assert.h>
@@ -15,6 +14,8 @@ AssembledOperation handle_funct3_artihmetic(Instruction *instruction, char asmLi
     return assemble_arithmetic(instruction, asmLineBuffer);
   }
   }
+
+  return InvalidOperation;
 }
 
 AssembledOperation handle_funct3_immediates(Instruction *instruction, char asmLineBuffer[256])
@@ -29,6 +30,8 @@ AssembledOperation handle_funct3_immediates(Instruction *instruction, char asmLi
     return assemble_immediates_loads(instruction, asmLineBuffer);
   }
   }
+  
+  return InvalidOperation;
 }
 
 AssembledOperation handle_funct3_upper_immediates(Instruction *instruction, char asmLineBuffer[256])
@@ -40,6 +43,8 @@ AssembledOperation handle_funct3_upper_immediates(Instruction *instruction, char
     return assemble_upper_immediates_jumps(instruction, asmLineBuffer);
   }
   }
+
+  return InvalidOperation;
 }
 
 AssembledOperation handle_funct3_stores(Instruction *instruction, char asmLineBuffer[256])
@@ -53,6 +58,8 @@ AssembledOperation handle_funct3_stores(Instruction *instruction, char asmLineBu
     return assemble_stores_branches(instruction, asmLineBuffer);
   }
   }
+
+  return InvalidOperation;
 }
 
 AssembledOperation handle_funct3_branches(Instruction *instruction, char asmLineBuffer[256])
@@ -69,6 +76,8 @@ AssembledOperation handle_funct3_branches(Instruction *instruction, char asmLine
     return assemble_stores_branches(instruction, asmLineBuffer);
   }
   }
+
+  return InvalidOperation;
 }
 
 AssembledOperation handle_funct3_jumps(Instruction *instruction, char asmLineBuffer[256])
@@ -80,6 +89,8 @@ AssembledOperation handle_funct3_jumps(Instruction *instruction, char asmLineBuf
     return assemble_upper_immediates_jumps(instruction, asmLineBuffer);
   }
   }
+  
+  return InvalidOperation;
 }
 
 AssembledOperation handle_funct3_loads(Instruction *instruction, char asmLineBuffer[256])
@@ -93,6 +104,8 @@ AssembledOperation handle_funct3_loads(Instruction *instruction, char asmLineBuf
     return assemble_immediates_loads(instruction, asmLineBuffer);
   }
   }
+  
+  return InvalidOperation;
 }
 
 AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[256])
@@ -130,6 +143,8 @@ AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[25
   default:
     return InvalidOperation;
   }
+
+  return InvalidOperation;
 }
 
 int main()
