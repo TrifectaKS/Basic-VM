@@ -11,7 +11,7 @@ AssembledOperation handle_funct3_artihmetic(Instruction *instruction, char asmLi
   {
   case 0x00:
   {
-    return assemble_arithmetic(instruction, asmLineBuffer);
+    return assemble_arithmetic_bitwise(instruction, asmLineBuffer);
   }
   }
 
@@ -108,6 +108,17 @@ AssembledOperation handle_funct3_loads(Instruction *instruction, char asmLineBuf
   return InvalidOperation;
 }
 
+
+AssembledOperation handle_funct3_bitwise(Instruction *instruction, char asmLineBuffer[256])
+{
+  switch(instruction->funct3){
+    case 0x0:
+      {
+        return assemble_arithmetic_bitwise(instruction, asmLineBuffer);
+      }
+  }
+} 
+
 AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[256])
 {
   switch (instruction->opcode)
@@ -139,6 +150,10 @@ AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[25
   case 0x07:
   {
     return handle_funct3_loads(instruction, asmLineBuffer);
+  }
+  case 0x08:
+  {
+    return handle_funct3_bitwise(instruction, asmLineBUffer); 
   }
   default:
     return InvalidOperation;

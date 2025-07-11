@@ -37,6 +37,20 @@ uint16_t imm_to_word_unsigned(const char *immStr) {
     return 0x0000; // Invalid input or out of range
 }
 
+uint8_t imm_to_half_word_unsigned(const char *immStr) {
+    if (immStr == NULL || *immStr == '\0') return 0x00;
+
+    char *endptr = NULL;
+    unsigned long value = strtoul(immStr, &endptr, 0); // base 0: auto detect decimal or hex
+
+    // Check if whole string was parsed and value fits uint16_t range
+    if (*endptr == '\0' && value <= 0xFFFF) {
+        return (uint8_t)value;
+    }
+
+    return 0x00; // Invalid input or out of range
+}
+
 uint16_t imm_to_word_signed(const char *immStr) {
     size_t len = strlen(immStr);
     if (len == 0) return 0x0000;
@@ -62,7 +76,7 @@ typedef struct {
 
 const AssembledOperation InvalidOperation = {.value = 0, .hasValue = false};
 
-AssembledOperation assemble_arithmetic(const Instruction *instruction,
+AssembledOperation assemble_arithmetic_bitwise(const Instruction *instruction,
                                        const char *asmLine) {
   char instructionStr[10];
   char rdStr[5], rs1Str[5], rs2Str[5];
