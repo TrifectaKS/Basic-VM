@@ -74,12 +74,17 @@ Instruction instructions[] = {
     {"XORI", 0x09, 0x2, 0x4B, 0, 32},
 
     // Shifts
-    // TODO: SLL SLR 
-    //{"SLL", }
+    {"SLL", 0xA, 0x0, 0x50, 0, 24},
+    {"SRL", 0xA, 0x0, 0x50, 0x1, 24},
+
+    // Immediate Shifts
+    {"SLLI", 0xA, 0x1, 0x51, 0, 32},
+    {"SRLI", 0xA, 0x1, 0x51, 0x1, 32},
 };
 
 Instruction *get_instruction_by_alias(char *instructionStr) {
-  for (int i = 0; i < sizeof(instructions) / sizeof(instructions[0]); i++) {
+  size_t count = sizeof(instructions) / sizeof(instructions[0]);
+  for (size_t i = 0; i < count; i++) {
     if (strcasecmp(instructionStr, instructions[i].name) == 0) {
       return &instructions[i];
     }
@@ -89,13 +94,13 @@ Instruction *get_instruction_by_alias(char *instructionStr) {
 
 Instruction *get_instruction_by_asm(const char *asmLine) {
   char instructionStr[10];
-  int count =
-      sscanf(asmLine, " %s", instructionStr); // Note the space before %s
+  sscanf(asmLine, " %s", instructionStr); // Note the space before %s
   return get_instruction_by_alias(instructionStr);
 }
 
 Instruction *get_instruction_by_opcode_funct3(uint8_t opcode, uint8_t funct3) {
-  for (int i = 0; i < sizeof(instructions) / sizeof(instructions[0]); i++) {
+  size_t count = sizeof(instructions) / sizeof(instructions[0]);
+  for (size_t i = 0; i < count; i++) {
     if (instructions[i].opcode == opcode && instructions[i].funct3 == funct3) {
       return &instructions[i];
     }

@@ -109,6 +109,36 @@ AssembledOperation handle_funct3_loads(Instruction *instruction, char asmLineBuf
 }
 
 
+AssembledOperation assemble_shift_immediates(const Instruction *instruction, const char *asmLine)
+// Handles SLLI/SRLI with 8-bit immediate where only lower 5 bits are used
+{
+  char instructionStr[20];
+  char rdStr[5], rs1Str[5], immStr[10];
+
+  int count = sscanf(asmLine, "%s %[^,], %[^,], %s", instructionStr, rdStr,
+                     rs1Str, immStr);
+  assert(count == 4);
+  if (count != 4) {
+    return (AssembledOperation){.hasValue = false};
+  }
+
+  uint32_t rd = register_to_byte(rdStr);   // 4 bits
+  uint32_t rs1 = register_to_byte(rs1Str); // 4 bits
+  uint32_t imm = imm_to_word_unsigned(immStr); // 16 bits, but only lower 5 bits used
+  uint32_t insOp = 0;
+
+  // NOTE: Shift amount uses only 5 bits (0-31), upper 3 bits of 8-bit imm are zeroed
+  imm = imm & 0x1F;
+
+  insOp |= (instruction->funct3 & 0b00000111); // bits 0-2 (funct3)
+  insOp |= (instruction->opcode & 0b00011111) << 3; // bits 3-7 (opcode)
+  insOp |= (rd & 0b00001111) << 8; // bits 8-11 (rd)
+  insOp |= (rs1 & 0b00001111) << 12; // bits 12-15 (rs1)
+  insOp |= imm << 16; // bits 16-23 (imm - only lower 5 bits used)
+
+  return (AssembledOperation){.value = insOp, .hasValue = true};
+}
+
 AssembledOperation handle_funct3_bitwise(Instruction *instruction, char asmLineBuffer[256])
 {
   switch(instruction->funct3){
@@ -116,8 +146,27 @@ AssembledOperation handle_funct3_bitwise(Instruction *instruction, char asmLineB
       {
         return assemble_arithmetic_bitwise(instruction, asmLineBuffer);
       }
+    case 0x1:
+      {
+        // SLLI, SRLI - use shift immediate handler (masks to 5 bits)
+        return assemble_shift_immediates(instruction, asmLineBuffer);
+      }
   }
-} 
+  return InvalidOperation;
+}
+
+AssembledOperation handle_funct3_bitwise_immediates(Instruction *instruction, char asmLineBuffer[256])
+{
+  switch(instruction->funct3){
+    case 0x0:
+    case 0x1:
+    case 0x2:
+      {
+        return assemble_immediates_loads(instruction, asmLineBuffer);
+      }
+  }
+  return InvalidOperation;
+}
 
 AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[256])
 {
@@ -153,7 +202,15 @@ AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[25
   }
   case 0x08:
   {
-    return handle_funct3_bitwise(instruction, asmLineBUffer); 
+    return handle_funct3_bitwise(instruction, asmLineBuffer);
+  }
+  case 0x09:
+  {
+    return handle_funct3_bitwise_immediates(instruction, asmLineBuffer);
+  }
+  case 0x0A:
+  {
+    return handle_funct3_bitwise(instruction, asmLineBuffer);
   }
   default:
     return InvalidOperation;
@@ -162,7 +219,7 @@ AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[25
   return InvalidOperation;
 }
 
-int main()
+int asm_main()
 {
   FILE *asmFile = fopen("roms/rom.asm", "r");
   FILE *romFile = fopen("roms/rom.bin", "wb");
@@ -221,4 +278,6 @@ int main()
   // Close files
   fclose(asmFile);
   fclose(romFile);
+
+  return 0;
 }
