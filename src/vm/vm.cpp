@@ -4,6 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Uncomment to enable verbose debug output
+// #define VERBOSE
+
+// Uncomment to only decode instructions without executing
+#define DISABLE_EXECUTION
+
 void vm_init(BasicVm *vm) {
     memset(vm, 0, sizeof(BasicVm));
     vm->stack_pointer = 0;
@@ -21,8 +27,10 @@ bool vm_load_rom(BasicVm *vm, const char *filename) {
     size_t bytes_read = fread(vm->memory, 1, sizeof(vm->memory), fp);
     fclose(fp);
 
+#ifdef VERBOSE
     printf("Loaded ROM: %s (%zu bytes)\n", filename, bytes_read);
     fflush(stdout);
+#endif
     return true;
 }
 
@@ -48,20 +56,96 @@ DecodedInstruction vm_decode(uint32_t instruction, Instruction instructionProper
         dec.rs2 = byte2 >> 4;
         dec.imm = 0;
     } else {
-        // 32-bit instruction
-        // TODO: Handle Arithmetic intermediate that have opcode, funct3, rd, rs1 and imm[16] - Match on opcode=0x2
-        // TODO: Handle Load intermediate that have opcode, funct3, funct4, rd and imm[16] - Match on opcode=0x3
-        // TODO: Handle Store that have opcode, funct3, rs1, rs2 and imm[16] - Match on opcode=0x4
-        // TODO: Handle Branch that have opcode, funct3, rs1, rs2 and imm[16] - Match on opcode=0x5
-        // TODO: Handle Jumps that have opcode, funct3, funct4, rd and imm[16] - Match on opcode=0x6
-        // TODO: Handle Load that have opcode, funct3, rd and rs1 - Match on opcode=0x7
-        // TODO: Handle Logic immediates (andi, ori, xori) that have opcode, funct3, rd, rs1 and imm[16] - Match on opcode=0x9
-        // TODO: Handle SHIFT logical immediates (slli, srli) that have opcode, funct3, funct4, rd, rs1 and imm[8] - Match on opcode_funct3=0x51
-        dec.funct4 = 0;
-        dec.rd = (instruction >> 8) & 0xF;
-        dec.rs1 = (instruction >> 12) & 0xF;
-        dec.rs2 = (instruction >> 16) & 0xF;
-        dec.imm = (instruction >> 16) & 0xFFFF;
+         // TODO: Handle SHIFT logical immediates (slli, srli) that have opcode, funct3, funct4, rd, rs1 and imm[8] - Match on opcode_funct3=0x51
+        // 32-bit instruction - decode based on opcode
+        switch (dec.opcode) {
+            case 0x02: // Arithmetic immediates (ADDI, SUBI, MULI, DIVI)
+                // Format: opcode(5)|funct3(3) | rd(4) | rs1(4) | imm(16)
+                dec.funct4 = 0;
+                dec.rd = (instruction >> 8) & 0xF;
+                dec.rs1 = (instruction >> 12) & 0xF;
+                dec.rs2 = 0;
+                dec.imm = (instruction >> 16) & 0xFFFF;
+                break;
+
+            case 0x03: // Upper immediates (LUI, AUIPC)
+                // Format: opcode(5)|funct3(3) | rd(4) | funct4(4) | imm(16)
+                dec.funct4 = (instruction >> 12) & 0xF;
+                dec.rd = (instruction >> 8) & 0xF;
+                dec.rs1 = 0;
+                dec.rs2 = 0;
+                dec.imm = (instruction >> 16) & 0xFFFF;
+                break;
+
+            case 0x04: // Store (SB, SH, SW)
+                // Format: opcode(5)|funct3(3) | rs1(4) | rs2(4) | imm(16)
+                dec.funct4 = 0;
+                dec.rs1 = (instruction >> 8) & 0xF;
+                dec.rs2 = (instruction >> 12) & 0xF;
+                dec.rd = 0;
+                dec.imm = (instruction >> 16) & 0xFFFF;  // 16-bit offset
+                break;
+
+            case 0x05: // Branch (BEQ, BNE, BLT, BGT, BLE, BGE)
+                // Format: opcode(5)|funct3(3) | rs1(4) | rs2(4) | imm(16)
+                // Note: Immediate bytes are NOT swapped for little-endian (assembler bug)
+                dec.funct4 = 0;
+                dec.rs1 = (instruction >> 8) & 0xF;
+                dec.rs2 = (instruction >> 12) & 0xF;
+                dec.rd = 0;
+                dec.imm = ((instruction >> 16) & 0xFF) | (((instruction >> 24) & 0xFF) << 8);
+                break;
+
+            case 0x06: // Jumps (JAL, JALR)
+                // JAL: opcode(5)|funct3(3) | rd(4) | imm(20) - imm in bits 12-31
+                // JALR: opcode(5)|funct3(3) | rd(4) | rs1(4) | imm(16) - imm in bits 16-31
+                dec.funct4 = 0;
+                dec.rd = (instruction >> 8) & 0xF;
+                if (dec.funct3 == 0x02) { // JALR
+                    dec.rs1 = (instruction >> 12) & 0xF;
+                    dec.imm = (instruction >> 16) & 0xFFFF; // 16-bit
+                } else { // JAL
+                    dec.rs1 = 0;
+                    // imm is 20 bits: bits 12-23 (12 bits) + bits 24-31 (8 bits)
+                    dec.imm = ((instruction >> 12) & 0xFFF) | (((instruction >> 24) & 0xFF) << 12);
+                }
+                dec.rs2 = 0;
+                break;
+
+            case 0x07: // Load (LW, LH, LB)
+                // Format: opcode(5)|funct3(3) | rd(4) | rs1(4) | imm(16)
+                dec.funct4 = 0;
+                dec.rd = (instruction >> 8) & 0xF;
+                dec.rs1 = (instruction >> 12) & 0xF;
+                dec.rs2 = 0;
+                dec.imm = (instruction >> 16) & 0xFFFF;  // 16-bit offset
+                break;
+
+            case 0x09: // Logic immediates (ANDI, ORI, XORI)
+                // Format: opcode(5)|funct3(3) | rd(4) | rs1(4) | imm(16)
+                dec.funct4 = 0;
+                dec.rd = (instruction >> 8) & 0xF;
+                dec.rs1 = (instruction >> 12) & 0xF;
+                dec.rs2 = 0;
+                dec.imm = (instruction >> 16) & 0xFFFF;  // 16-bit immediate
+                break;
+
+            case 0x0F: // HALT
+                dec.funct4 = 0;
+                dec.rd = 0;
+                dec.rs1 = 0;
+                dec.rs2 = 0;
+                dec.imm = 0;
+                break;
+
+            default:
+                dec.funct4 = 0;
+                dec.rd = (instruction >> 8) & 0xF;
+                dec.rs1 = (instruction >> 12) & 0xF;
+                dec.rs2 = (instruction >> 16) & 0xF;
+                dec.imm = (instruction >> 16) & 0xFFFF;
+                break;
+        }
     }
 
     return dec;
@@ -100,10 +184,10 @@ void vm_print_instruction(BasicVm *vm, DecodedInstruction decodedInstruction) {
                 printf("r%d, r%d, 0x%04X\n", decodedInstruction.rs1, decodedInstruction.rs2, decodedInstruction.imm);
                 break;
             case 0x06: // Jumps
-                if (decodedInstruction.funct4 == 0x01) { // JALR
+                if (decodedInstruction.funct3 == 0x02) { // JALR (funct3=0x02)
                     printf("r%d, r%d, 0x%04X\n", decodedInstruction.rd, decodedInstruction.rs1, decodedInstruction.imm);
-                } else { // JAL
-                    printf("r%d, 0x%04X\n", decodedInstruction.rd, decodedInstruction.imm);
+                } else { // JAL (funct3=0x01)
+                    printf("r%d, 0x%05X\n", decodedInstruction.rd, decodedInstruction.imm);
                 }
                 break;
             case 0x0A: // Shifts
@@ -156,15 +240,39 @@ DecodedInstruction vm_step(BasicVm *vm) {
 
     // Read first byte to determine opcode and instruction length
     uint8_t byte0 = vm->memory[vm->program_counter];
-    
-    Instruction *ins = get_instruction_by_opcodefunct3(byte0);
+    uint8_t funct3 = byte0 & 0x7;
+    uint8_t opcode = (byte0 >> 3) & 0x1F;
+    uint8_t opcode_funct3 = byte0;
+
+    Instruction *ins = NULL;
+
+    // Check if this is a 24-bit R-type instruction that needs funct4 lookup
+    if (opcode_funct3 == 0x08 || opcode_funct3 == 0x40 || opcode_funct3 == 0x50) {
+        // For 24-bit instructions, we need funct4 to distinguish ADD/SUB/MUL/DIV etc.
+        // Read byte1 to get funct4
+        uint8_t byte1 = vm->memory[vm->program_counter + 1];
+        uint8_t funct4 = byte1 & 0xF;
+        ins = get_instruction_by_all(opcode, funct3, funct4);
+    } else if (opcode == 0x03) {
+        // For 32-bit instructions that also use funct4 (LUI/AUIPC, JAL/JALR)
+        // Read byte1 to get funct4
+        uint8_t byte1 = vm->memory[vm->program_counter + 1];
+        uint8_t funct4 = (byte1 >> 4) & 0xF;
+        ins = get_instruction_by_all(opcode, funct3, funct4);
+    } else {
+        // For other 32-bit instructions, use opcode and funct3 only
+        ins = get_instruction_by_opcode_funct3(opcode, funct3);
+    }
+
     if (!ins) {
-        printf("Error: Unknown instruction at PC=0x%04X\n", vm->program_counter);
+        printf("Error: Unknown instruction at PC=0x%04X (opcode=0x%02X, funct3=0x%X)\n", vm->program_counter, opcode, funct3);
         return (DecodedInstruction){0};
     }
+#ifdef VERBOSE
     else{
         printf("Fetched instruction: %s at PC=0x%04X\n", ins->name, vm->program_counter);
     }
+#endif
 
     // Determine instruction length (24-bit = 3 bytes, 32-bit = 4 bytes)
     // Check if this is a 32-bit instruction format
@@ -194,6 +302,10 @@ DecodedInstruction vm_step(BasicVm *vm) {
     // Increment PC for next instruction (will be adjusted by branches/jumps)
     uint16_t next_pc = vm->program_counter + instr_length;
 
+#ifdef DISABLE_EXECUTION
+    // Just decode and print, don't execute
+    vm->program_counter = next_pc;
+#else
     // Execute instruction
     switch (dec.opcode) {
         case 0x01: // Arithmetic R-type (ADD, SUB, MUL, DIV)
@@ -409,28 +521,37 @@ DecodedInstruction vm_step(BasicVm *vm) {
             printf("Error: Unknown opcode 0x%02X\n", dec.opcode);
             return (DecodedInstruction){0};
     }
+#endif  // DISABLE_EXECUTION
 
+#ifdef VERBOSE
     vm_print_state(vm);
+#endif
     return dec;
 }
 
 bool vm_run(BasicVm *vm) {
+#ifdef VERBOSE
     printf("=== VM Starting ===\n");
     printf("ROM loaded, memory[0]=0x%02X memory[1]=0x%02X\n", vm->memory[0], vm->memory[1]);
     fflush(stdout);
 
     vm_print_state(vm);
     fflush(stdout);
+#endif
 
     int instruction_count = 0;
     const int MAX_INSTRUCTIONS = 1000000;  // Safety limit
 
+#ifdef VERBOSE
     printf("Entering execution loop...\n");
     fflush(stdout);
+#endif
 
     while (instruction_count < MAX_INSTRUCTIONS) {
+#ifdef VERBOSE
         printf("Step %d: PC=0x%04X\n", instruction_count, vm->program_counter);
         fflush(stdout);
+#endif
         DecodedInstruction dec = vm_step(vm);
         if (dec.opcode == 0) {
             printf("VM error at instruction %d\n", instruction_count);

@@ -55,8 +55,8 @@ Instruction instructions[] = {
     {"BGE", 0x05, 0x05, 0x2D, 0, 32},
 
     // Jump + Link
-    {"JAL", 0x06, 0x00, 0x31, 0x00, 32},
-    {"JALR", 0x06, 0x00, 0x31, 0x01, 32},
+    {"JAL", 0x06, 0x01, 0x31, 0, 32},
+    {"JALR", 0x06, 0x02, 0x32, 0, 32},
 
     // Loads
     {"LW", 0x07, 0x00, 0x38, 0, 32},
@@ -115,6 +115,19 @@ Instruction *get_instruction_by_opcodefunct3(uint8_t opcodefunct3) {
   size_t count = sizeof(instructions) / sizeof(instructions[0]);
   for (size_t i = 0; i < count; i++) {
     if (instructions[i].opcode_funct3 == opcodefunct3) {
+      return &instructions[i];
+    }
+  }
+  return NULL;
+}
+
+// Find instruction by opcode, funct3, AND funct4 (for 24-bit R-type instructions)
+Instruction *get_instruction_by_all(uint8_t opcode, uint8_t funct3, uint8_t funct4) {
+  size_t count = sizeof(instructions) / sizeof(instructions[0]);
+  for (size_t i = 0; i < count; i++) {
+    if (instructions[i].opcode == opcode &&
+        instructions[i].funct3 == funct3 &&
+        instructions[i].funct4 == funct4) {
       return &instructions[i];
     }
   }

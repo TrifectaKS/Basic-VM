@@ -14,7 +14,7 @@ typedef struct {
     uint8_t rd;
     uint8_t rs1;
     uint8_t rs2;
-    uint16_t imm;
+    uint32_t imm;  // Changed to uint32_t for JAL's 20-bit immediate
     Instruction* instruction;
 } DecodedInstruction;
 

@@ -17,8 +17,8 @@ BLT r1, r2, 0xFF00
 BGT r1, r2, 0xFF00
 BLE r1, r2, 0xFF00
 BGE r1, r2, 0xFF00
-JAL r1, 0xFF00
-JALR r1, r2, 0x00
+JAL r1, 0xFFFFF
+JALR r1, r2, 0x1234
 LW r1, r2, 0xFF
 LH r1, r2, 0xFF
 LB r1, r2, 0xFF

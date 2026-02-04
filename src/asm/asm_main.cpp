@@ -84,9 +84,13 @@ AssembledOperation handle_funct3_jumps(Instruction *instruction, char asmLineBuf
 {
   switch (instruction->funct3)
   {
-  case 0x00:
+  case 0x01:
   {
     return assemble_upper_immediates_jumps(instruction, asmLineBuffer);
+  }
+  case 0x02:
+  {
+    return assemble_upper_immediates_jumps_register(instruction, asmLineBuffer);
   }
   }
   
