@@ -212,6 +212,19 @@ AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[25
   {
     return handle_funct3_bitwise(instruction, asmLineBuffer);
   }
+  case 0x0F:
+  {
+    // HALT instruction - no operands
+    // Encoding: funct3(3) | opcode(5) | rd(4) | rs1(4) | imm(16) = 0x78xxxxxx
+    // HALT: funct3=0, opcode=0x0F, rd=0, rs1=0, imm=0
+    uint32_t insOp = 0;
+    insOp |= 0x0;                        // funct3 = 0
+    insOp |= (0x0F & 0x1F) << 3;        // opcode = 0x0F
+    insOp |= 0 << 8;                     // rd = 0
+    insOp |= 0 << 12;                    // rs1 = 0
+    insOp |= 0 << 16;                    // imm = 0
+    return (AssembledOperation){.value = insOp, .hasValue = true};
+  }
   default:
     return InvalidOperation;
   }

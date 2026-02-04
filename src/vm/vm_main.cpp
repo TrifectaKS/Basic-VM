@@ -1,26 +1,21 @@
-#include "raylib.h"
-#include "rcamera.h"
-#include <math.h>
+#include "vm.h"
 #include <stdio.h>
 
-int main(void)
+int vm_main(int argc, char *argv[])
 {
+    BasicVm vm;
+    vm_init(&vm);
 
-    // Initialization
-    //--------------------------------------------------------------------------------------
-    SetTargetFPS(60); // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
-
-    // Main game loop
-    while (!WindowShouldClose()) // Detect window close button or ESC key
-    {
+    const char *rom_path = "roms/rom.bin";
+    if (argc > 1) {
+        rom_path = argv[1];
     }
 
-    // De-Initialization
+    if (!vm_load_rom(&vm, rom_path)) {
+        return 1;
+    }
 
-    //--------------------------------------------------------------------------------------
-    CloseWindow(); // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
+    vm_run(&vm);
 
     return 0;
 }

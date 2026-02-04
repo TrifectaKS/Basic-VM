@@ -80,6 +80,9 @@ Instruction instructions[] = {
     // Immediate Shifts
     {"SLLI", 0xA, 0x1, 0x51, 0, 32},
     {"SRLI", 0xA, 0x1, 0x51, 0x1, 32},
+
+    // System
+    {"HALT", 0x0F, 0x0, 0x78, 0x0, 32},
 };
 
 Instruction *get_instruction_by_alias(char *instructionStr) {
@@ -102,6 +105,16 @@ Instruction *get_instruction_by_opcode_funct3(uint8_t opcode, uint8_t funct3) {
   size_t count = sizeof(instructions) / sizeof(instructions[0]);
   for (size_t i = 0; i < count; i++) {
     if (instructions[i].opcode == opcode && instructions[i].funct3 == funct3) {
+      return &instructions[i];
+    }
+  }
+  return NULL;
+}
+
+Instruction *get_instruction_by_opcodefunct3(uint8_t opcodefunct3) {
+  size_t count = sizeof(instructions) / sizeof(instructions[0]);
+  for (size_t i = 0; i < count; i++) {
+    if (instructions[i].opcode_funct3 == opcodefunct3) {
       return &instructions[i];
     }
   }
