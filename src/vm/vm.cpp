@@ -45,6 +45,7 @@ DecodedInstruction vm_decode(uint32_t instruction, Instruction instructionProper
     dec.opcode_funct3 = instructionProperties.opcode_funct3;
     
     // 24 BIT INSTRUCTIONS (ARITHMETIC, LOGIC, SHIFTS)
+    // Note: SLLI/SRLI (opcode_funct3=0x51) are 32-bit, handled in switch below
     if (dec.opcode_funct3 == 0x08 || dec.opcode_funct3 == 0x40 || dec.opcode_funct3 == 0x50) {
         // 24-bit R-type instruction
         uint8_t byte1 = (instruction >> 8) & 0xFF;
@@ -69,9 +70,9 @@ DecodedInstruction vm_decode(uint32_t instruction, Instruction instructionProper
                 break;
 
             case 0x03: // Upper immediates (LUI, AUIPC)
-                // Format: opcode(5)|funct3(3) | rd(4) | funct4(4) | imm(16)
-                dec.funct4 = (instruction >> 12) & 0xF;
-                dec.rd = (instruction >> 8) & 0xF;
+                // Format: opcode(5)|funct3(3) | funct4(4) | rd(4) | imm(16)
+                dec.funct4 = (instruction >> 8) & 0xF;
+                dec.rd = (instruction >> 12) & 0xF;
                 dec.rs1 = 0;
                 dec.rs2 = 0;
                 dec.imm = (instruction >> 16) & 0xFFFF;
@@ -130,6 +131,16 @@ DecodedInstruction vm_decode(uint32_t instruction, Instruction instructionProper
                 dec.imm = (instruction >> 16) & 0xFFFF;  // 16-bit immediate
                 break;
 
+            case 0x0A: // Shift immediates (SLLI, SRLI)
+                // Format: opcode(5)|funct3(3) | funct4(4) | rd(4) | rs1(4) | imm(8)
+                // 32-bit instruction stored in 4 bytes (little-endian)
+                dec.funct4 = (instruction >> 8) & 0xF;
+                dec.rd = (instruction >> 12) & 0xF;
+                dec.rs1 = (instruction >> 24) & 0xF;
+                dec.rs2 = 0;
+                dec.imm = (instruction >> 16) & 0xFF;  // 8-bit immediate from bits 16-23
+                break;
+
             case 0x0F: // HALT
                 dec.funct4 = 0;
                 dec.rd = 0;
@@ -167,15 +178,16 @@ void vm_print_instruction(BasicVm *vm, DecodedInstruction decodedInstruction) {
         switch (decodedInstruction.opcode) {
             case 0x01: // Arithmetic R-type
             case 0x08: // Bitwise R-type
-                printf("r%d, r%d, r%d\n", decodedInstruction.rd, decodedInstruction.rs1, decodedInstruction.rs2);
+                printf("[funct4=0x%X] r%d, r%d, r%d\n", decodedInstruction.funct4, decodedInstruction.rd, decodedInstruction.rs1, decodedInstruction.rs2);
                 break;
             case 0x02: // Immediates I-type
             case 0x07: // Loads I-type
             case 0x09: // Bitwise Immediates I-type
                 printf("r%d, r%d, 0x%04X\n", decodedInstruction.rd, decodedInstruction.rs1, decodedInstruction.imm);
                 break;
-            case 0x03: // Upper Immediates U-type
-                printf("r%d, 0x%04X\n", decodedInstruction.rd, decodedInstruction.imm);
+            case 0x03: // Upper Immediates U-type (LUI/AUIPC)
+                // Format: opcode(5)|funct3(3) | funct4(4) | rd(4) | imm(16)
+                printf("[funct4=0x%X] r%d, 0x%04X\n", decodedInstruction.funct4, decodedInstruction.rd, decodedInstruction.imm);
                 break;
             case 0x04: // Stores S-type
                 printf("r%d, 0x%04X(r%d)\n", decodedInstruction.rs2, decodedInstruction.imm, decodedInstruction.rs1);
@@ -191,10 +203,16 @@ void vm_print_instruction(BasicVm *vm, DecodedInstruction decodedInstruction) {
                 }
                 break;
             case 0x0A: // Shifts
-                if (decodedInstruction.funct4 == 0) { // SLL
-                    printf("r%d, r%d, r%d\n", decodedInstruction.rd, decodedInstruction.rs1, decodedInstruction.rs2);
-                } else { // SRL
-                    printf("r%d, r%d, r%d\n", decodedInstruction.rd, decodedInstruction.rs1, decodedInstruction.rs2);
+                // opcode_funct3 0x50 = SLL/SRL (24-bit, register-based)
+                // opcode_funct3 0x51 = SLLI/SRLI (32-bit, immediate-based)
+                if (decodedInstruction.opcode_funct3 == 0x50) {
+                    // 24-bit: SLL/SRL - register-based
+                    printf("[funct4=0x%X] r%d, r%d, r%d\n",
+                           decodedInstruction.funct4, decodedInstruction.rd, decodedInstruction.rs1, decodedInstruction.rs2);
+                } else {
+                    // 32-bit: SLLI/SRLI - immediate-based (8-bit immediate)
+                    printf("[funct4=0x%X] r%d, r%d, 0x%01X\n",
+                           decodedInstruction.funct4, decodedInstruction.rd, decodedInstruction.rs1, decodedInstruction.imm & 0xFF);
                 }
                 break;
             case 0x0F: // HALT
@@ -247,17 +265,18 @@ DecodedInstruction vm_step(BasicVm *vm) {
     Instruction *ins = NULL;
 
     // Check if this is a 24-bit R-type instruction that needs funct4 lookup
-    if (opcode_funct3 == 0x08 || opcode_funct3 == 0x40 || opcode_funct3 == 0x50) {
+    if (opcode_funct3 == 0x08 || opcode_funct3 == 0x40 || opcode_funct3 == 0x50|| opcode_funct3 == 0x51) {
         // For 24-bit instructions, we need funct4 to distinguish ADD/SUB/MUL/DIV etc.
         // Read byte1 to get funct4
         uint8_t byte1 = vm->memory[vm->program_counter + 1];
         uint8_t funct4 = byte1 & 0xF;
         ins = get_instruction_by_all(opcode, funct3, funct4);
     } else if (opcode == 0x03) {
-        // For 32-bit instructions that also use funct4 (LUI/AUIPC, JAL/JALR)
-        // Read byte1 to get funct4
+        // For 32-bit instructions that use funct4 (LUI/AUIPC)
+        // Format: opcode(5)|funct3(3) | rd(4) | funct4(4) | imm(16)
+        // funct4 is in bits 0-3 of byte1, rd is in bits 4-7
         uint8_t byte1 = vm->memory[vm->program_counter + 1];
-        uint8_t funct4 = (byte1 >> 4) & 0xF;
+        uint8_t funct4 = byte1 & 0xF;  // Read bits 0-3 for funct4
         ins = get_instruction_by_all(opcode, funct3, funct4);
     } else {
         // For other 32-bit instructions, use opcode and funct3 only

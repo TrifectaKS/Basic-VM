@@ -148,8 +148,32 @@ AssembledOperation assemble_immediates_loads(const Instruction *instruction,
   return (AssembledOperation){.value = insOp, .hasValue = true};
 }
 
+// LUI/AUIPC handler: opcode(5)|funct3(3) | funct4(4) | rd(4) | imm(16)
+// LUI: funct4=0x00, AUIPC: funct4=0x01
+AssembledOperation assemble_upper_immediates(const Instruction *instruction,
+                                             const char *asmLine) {
+  char rdStr[5], immStr[10];
+
+  int count = sscanf(asmLine, "%*s %[^,], %s", rdStr, immStr);
+  if (count != 2) {
+    return (AssembledOperation){.hasValue = false};
+  }
+
+  uint32_t rd = register_to_byte(rdStr);
+  uint32_t imm = imm_to_word_unsigned(immStr) & 0xFFFF;
+
+  uint32_t insOp = 0;
+  insOp |= (instruction->funct3 & 0b00000111); // bits 0-2
+  insOp |= (instruction->opcode & 0b00011111) << 3; // bits 3-7
+  insOp |= (instruction->funct4 & 0b00001111) << 8; // bits 8-11 (funct4)
+  insOp |= (rd & 0b00001111) << 12; // bits 12-15 (rd)
+  insOp |= imm << 16; // bits 16-31
+
+  return (AssembledOperation){.value = insOp, .hasValue = true};
+}
+
 // JAL handler: opcode(5)|funct3(3) | rd(4) | imm(20)
-AssembledOperation assemble_upper_immediates_jumps(const Instruction *instruction,
+AssembledOperation assemble_jumps(const Instruction *instruction,
                                              const char *asmLine) {
   char rdStr[5], immStr[10];
 
@@ -179,7 +203,7 @@ AssembledOperation assemble_upper_immediates_jumps(const Instruction *instructio
 }
 
 // JALR handler: opcode(5)|funct3(3) | rd(4) | rs1(4) | imm(16)
-AssembledOperation assemble_upper_immediates_jumps_register(const Instruction *instruction,
+AssembledOperation assemble_jumps_register(const Instruction *instruction,
                                                    const char *asmLine) {
   char rdStr[5], rs1Str[5], immStr[10];
 

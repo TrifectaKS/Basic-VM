@@ -30,6 +30,6 @@ ORI r1, r2, 0xFF
 XORI r1, r2, 0xFF
 SLL r1, r2, r3
 SRL r1, r2, r3
-SLLI r1, r2, 0x123
-SRLI r1, r2, 0x123
+SLLI r1, r2, 0xe
+SRLI r1, r2, 0xf
 HALT

@@ -40,7 +40,7 @@ AssembledOperation handle_funct3_upper_immediates(Instruction *instruction, char
   {
   case 0x00:
   {
-    return assemble_upper_immediates_jumps(instruction, asmLineBuffer);
+    return assemble_upper_immediates(instruction, asmLineBuffer);
   }
   }
 
@@ -86,11 +86,11 @@ AssembledOperation handle_funct3_jumps(Instruction *instruction, char asmLineBuf
   {
   case 0x01:
   {
-    return assemble_upper_immediates_jumps(instruction, asmLineBuffer);
+    return assemble_jumps(instruction, asmLineBuffer);
   }
   case 0x02:
   {
-    return assemble_upper_immediates_jumps_register(instruction, asmLineBuffer);
+    return assemble_jumps_register(instruction, asmLineBuffer);
   }
   }
   
@@ -114,7 +114,9 @@ AssembledOperation handle_funct3_loads(Instruction *instruction, char asmLineBuf
 
 
 AssembledOperation assemble_shift_immediates(const Instruction *instruction, const char *asmLine)
-// Handles SLLI/SRLI with 8-bit immediate where only lower 5 bits are used
+// Handles SLLI/SRLI with 8-bit immediate
+// Format: opcode(5)|funct3(3) | funct4(4) | rd(4) | rs1(4) | imm(8)
+// 32-bit instruction stored in 4 bytes (little-endian)
 {
   char instructionStr[20];
   char rdStr[5], rs1Str[5], immStr[10];
@@ -128,17 +130,15 @@ AssembledOperation assemble_shift_immediates(const Instruction *instruction, con
 
   uint32_t rd = register_to_byte(rdStr);   // 4 bits
   uint32_t rs1 = register_to_byte(rs1Str); // 4 bits
-  uint32_t imm = imm_to_word_unsigned(immStr); // 16 bits, but only lower 5 bits used
+  uint32_t imm = imm_to_word_unsigned(immStr); // 8 bits
   uint32_t insOp = 0;
-
-  // NOTE: Shift amount uses only 5 bits (0-31), upper 3 bits of 8-bit imm are zeroed
-  imm = imm & 0x1F;
 
   insOp |= (instruction->funct3 & 0b00000111); // bits 0-2 (funct3)
   insOp |= (instruction->opcode & 0b00011111) << 3; // bits 3-7 (opcode)
-  insOp |= (rd & 0b00001111) << 8; // bits 8-11 (rd)
-  insOp |= (rs1 & 0b00001111) << 12; // bits 12-15 (rs1)
-  insOp |= imm << 16; // bits 16-23 (imm - only lower 5 bits used)
+  insOp |= (instruction->funct4 & 0b00001111) << 8; // bits 8-11 (funct4)
+  insOp |= (rd & 0b00001111) << 12; // bits 12-15 (rd)
+  insOp |= (imm & 0xFF) << 16; // bits 16-23 (imm)
+  insOp |= (rs1 & 0xF) << 24; // bits 24-27 (rs1)
 
   return (AssembledOperation){.value = insOp, .hasValue = true};
 }
