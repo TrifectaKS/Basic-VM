@@ -1,4 +1,5 @@
 #include "config.h"
+#include "architecture.h"
 #include "vm.h"
 #include "vm_instruction.h"
 #include "decode.h"
@@ -10,7 +11,7 @@
 void vm_init(BasicVm *vm) {
     memset(vm, 0, sizeof(BasicVm));
     vm->stack_pointer = 0;
-    vm->program_counter = 0;
+    vm->program_counter = PROGRAM_ROM;
 }
 
 bool vm_load_rom(BasicVm *vm, const char *filename) {
@@ -21,7 +22,19 @@ bool vm_load_rom(BasicVm *vm, const char *filename) {
         return false;
     }
 
-    size_t bytes_read = fread(vm->memory, 1, sizeof(vm->memory), fp);
+    // Get file size
+    fseek(fp, 0, SEEK_END);
+    long file_size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    if (file_size > PROGRAM_SIZE) {
+        printf("Error: ROM file too large: %s (%ld bytes, max %d)\n", filename, file_size, PROGRAM_SIZE);
+        fclose(fp);
+        return false;
+    }
+
+    // Load into program ROM area (0x1000)
+    size_t bytes_read = fread(vm->memory + PROGRAM_ROM, 1, file_size, fp);
     fclose(fp);
 
 #ifdef VERBOSE
@@ -119,8 +132,8 @@ static bool check_halt(BasicVm *vm, DecodedInstruction *dec) {
 }
 
 DecodedInstruction vm_step(BasicVm *vm) {
-    // Fetch instruction
-    if (vm->program_counter >= 4096) {
+    // Fetch instruction from program ROM
+    if (vm->program_counter >= PROGRAM_ROM + PROGRAM_SIZE) {
         printf("Error: PC out of bounds (0x%04X)\n", vm->program_counter);
         return (DecodedInstruction){0};
     }
