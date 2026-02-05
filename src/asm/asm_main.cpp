@@ -1,5 +1,4 @@
-#define DEBUG
-
+#include "config.h"
 #include "asm.h"
 #include <assert.h>
 

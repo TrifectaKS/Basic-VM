@@ -1,14 +1,9 @@
+#include "config.h"
 #include "vm.h"
 #include "instructions.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-// Uncomment to enable verbose debug output
-// #define VERBOSE
-
-// Uncomment to only decode instructions without executing
-#define DISABLE_EXECUTION
 
 void vm_init(BasicVm *vm) {
     memset(vm, 0, sizeof(BasicVm));

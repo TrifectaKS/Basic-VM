@@ -1,6 +1,7 @@
 #ifndef ROM_WRITER_H
 #define ROM_WRITER_H
 
+#include "config.h"
 #include "instructions.h"
 
 #ifdef DEBUG

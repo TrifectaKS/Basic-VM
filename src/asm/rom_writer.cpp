@@ -1,3 +1,4 @@
+#include "config.h"
 #include "rom_writer.h"
 
 BytePack pack_bytes(Instruction* instruction, uint32_t result) {

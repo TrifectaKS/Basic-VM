@@ -1,3 +1,4 @@
+#include "config.h"
 #include "vm.h"
 #include <stdio.h>
 

@@ -29,5 +29,6 @@ AssembledOperation assemble_upper_immediates(const Instruction *instruction, con
 AssembledOperation assemble_jumps(const Instruction *instruction, const char *asmLine);
 AssembledOperation assemble_jumps_register(const Instruction *instruction, const char *asmLine);
 AssembledOperation assemble_stores_branches(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_shift_immediates(const Instruction *instruction, const char *asmLine);
 
 #endif

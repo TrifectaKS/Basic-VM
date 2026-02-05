@@ -2,15 +2,24 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: g++ build active file",
-            "command": "/usr/bin/gcc", //Change path to g++ or gcc compiler
+            "label": "C/C++: g++ build active file -raylib",
+            "command": "/usr/bin/gcc",
             "args": [
+                "src/**/*.cpp",
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
-                "-Iinclude" ,"-Isrc" ,"-lraylib" ,"-lGL" ,"-lm", "-lpthread", "-ldl", "-lrt", "-lX11" //additional arguments for raylib
+                "-Iinclude",
+                "-Isrc",
+                "-lraylib",
+                "-lGL",
+                "-lm",
+                "-lpthread",
+                "-ldl",
+                "-lrt",
+                "-lX11"
             ],
             "options": {
                 "cwd": "${fileDirname}"

@@ -1,3 +1,4 @@
+#include "config.h"
 #include "assemble.h"
 
 uint8_t register_to_byte(const char *reg) {
@@ -215,6 +216,32 @@ AssembledOperation assemble_stores_branches(const Instruction *instruction,
   printf("Parsed Assembly \n");
   print_binary32(insOp);
 #endif
+
+  return (AssembledOperation){.value = insOp, .hasValue = true};
+}
+
+AssembledOperation assemble_shift_immediates(const Instruction *instruction, const char *asmLine)
+{
+  char instructionStr[20];
+  char rdStr[5], rs1Str[5], immStr[10];
+
+  int count = sscanf(asmLine, "%s %[^,], %[^,], %s", instructionStr, rdStr, rs1Str, immStr);
+  assert(count == 4);
+  if (count != 4) {
+    return (AssembledOperation){.hasValue = false};
+  }
+
+  uint32_t rd = register_to_byte(rdStr);
+  uint32_t rs1 = register_to_byte(rs1Str);
+  uint32_t imm = imm_to_word_unsigned(immStr);
+  uint32_t insOp = 0;
+
+  insOp |= (instruction->funct3 & 0b00000111);
+  insOp |= (instruction->opcode & 0b00011111) << 3;
+  insOp |= (instruction->funct4 & 0b00001111) << 8;
+  insOp |= (rd & 0b00001111) << 12;
+  insOp |= (imm & 0xFF) << 16;
+  insOp |= (rs1 & 0xF) << 24;
 
   return (AssembledOperation){.value = insOp, .hasValue = true};
 }

@@ -14,7 +14,7 @@ AssembledOperation handle_funct3_jumps(Instruction *instruction, char asmLineBuf
 AssembledOperation handle_funct3_loads(Instruction *instruction, char asmLineBuffer[256]);
 AssembledOperation handle_funct3_bitwise(Instruction *instruction, char asmLineBuffer[256]);
 AssembledOperation handle_funct3_bitwise_immediates(Instruction *instruction, char asmLineBuffer[256]);
+AssembledOperation handle_funct3_shifts(Instruction *instruction, char asmLineBuffer[256]);
 AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[256]);
-AssembledOperation assemble_shift_immediates(const Instruction *instruction, const char *asmLine);
 
 #endif
