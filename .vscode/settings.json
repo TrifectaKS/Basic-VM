@@ -1,11 +1,7 @@
 {
-	"files.exclude": {
-		"**/.git": true,
-		"**/.svn": true,
-		"**/.hg": true,
-		"**/CVS": true,
-		"**/.DS_Store": true,
-		"**/*.o": true,
-		"**/*.exe": true,
-	}
+    "files.associations": {
+        "compare": "cpp",
+        "instructions.h": "c"
+    },
+    "cortex-debug.variableUseNaturalFormat": false
 }
