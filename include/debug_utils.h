@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void print_binary32(uint32_t value) {
+inline void print_binary32(uint32_t value) {
   printf("Dec: %u\n", value);
   printf("Hex: 0x%02X\n", value);
   printf("Bin: ");
@@ -18,7 +18,7 @@ void print_binary32(uint32_t value) {
   printf("\n");
 }
 
-void print_binary8(uint8_t value) {
+inline void print_binary8(uint8_t value) {
   printf("Dec: %u\n", value);
   printf("Hex: 0x%02X\n", value);
   printf("Bin: ");

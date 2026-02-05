@@ -1,6 +1,5 @@
-#include "asm/asm_main.cpp"
-#include "vm/vm.cpp"
-#include "vm/vm_main.cpp"
+#include "asm_main.h"
+#include "vm_main.h"
 
 int main()
 {

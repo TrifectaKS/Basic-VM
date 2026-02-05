@@ -2,6 +2,7 @@
 #define VM_H
 
 #include "architecture.h"
+#include "instructions.h"
 #include <stdint.h>
 #include <stdbool.h>
 
