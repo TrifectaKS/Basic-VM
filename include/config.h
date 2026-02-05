@@ -8,6 +8,6 @@
 //#define VERBOSE
 
 // Uncomment to disable instruction execution (useful for testing assembler only)
-#define DISABLE_EXECUTION
+//#define DISABLE_EXECUTION
 
 #endif // CONFIG_H
