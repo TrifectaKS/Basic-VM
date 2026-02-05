@@ -15,6 +15,7 @@ typedef struct {
     uint8_t rs1;
     uint8_t rs2;
     uint32_t imm;
+    bool isHalt;
     Instruction* instruction;
 } DecodedInstruction;
 

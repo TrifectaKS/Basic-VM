@@ -49,6 +49,29 @@ uint16_t imm_to_word_signed(const char *immStr) {
     return 0x0000;
 }
 
+AssembledOperation assemble_byte_instruction(const Instruction *instruction,
+                                       const char *asmLine) {
+  char instructionStr[10];
+
+  int count = sscanf(asmLine, "%s", instructionStr);
+  assert(count == 1);
+  if (count != 1) {
+    return (AssembledOperation){.hasValue = false};
+  }
+
+  uint32_t insOp = 0;
+
+  insOp |= (instruction->funct3 & 0b00000111);
+  insOp |= (instruction->opcode & 0b00011111) << 3;
+
+#ifdef DEBUG
+  printf("Parsed Assembly \n");
+  print_binary8(insOp);
+#endif
+
+  return (AssembledOperation){.value = insOp, .hasValue = true};
+}
+
 AssembledOperation assemble_arithmetic_bitwise(const Instruction *instruction,
                                        const char *asmLine) {
   char instructionStr[10];

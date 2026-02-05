@@ -1,35 +1,3 @@
 ADD r1, r2, r3
-SUB r1, r2, r3
-MUL r1, r2, r3
-DIV r1, r2, r3
-ADDI r1, r2, 0x1234
-SUBI r1, r2, 0x1234
-MULI r1, r2, 0x1234
-DIVI r1, r2, 0x1234
-LUI r1, 0x1234
-AUIPC r1, 0x1234
-SB r1, r2, 0x1234
-SH r1, r2, 0x1234
-SW r1, r2, 0x1234
-BEQ r1, r2, 0x1234
-BNE r1, r2, 0x1234
-BLT r1, r2, 0x1234
-BGT r1, r2, 0x1234
-BLE r1, r2, 0x1234
-BGE r1, r2, 0x1234
-JAL r1, 0x12345
-JALR r1, r2, 0x1234
-LW r1, r2, 0x1234
-LH r1, r2, 0x1234
-LB r1, r2, 0x1234
-AND r1, r2, r3
-OR r1, r2, r3
-XOR r1, r2, r3
-ANDI r1, r2, 0x1234
-ORI r1, r2, 0x1234
-XORI r1, r2, 0x1234
-SLL r1, r2, r3
-SRL r1, r2, r3
-SLLI r1, r2, 0xFF
-SRLI r1, r2, 0xFF
+CLS
 HALT

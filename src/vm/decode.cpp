@@ -224,8 +224,9 @@ DecodedInstruction decode_halt(uint32_t instruction, Instruction ins) {
     dec.opcode = (instruction >> 3) & 0x1F;
     dec.instruction = &ins;
     dec.opcode_funct3 = ins.opcode_funct3;
+    dec.isHalt = true;
+    dec.funct4 = ins.funct4;
 
-    dec.funct4 = 0;
     dec.rd = 0;
     dec.rs1 = 0;
     dec.rs2 = 0;

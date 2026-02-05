@@ -30,5 +30,6 @@ AssembledOperation assemble_jumps(const Instruction *instruction, const char *as
 AssembledOperation assemble_jumps_register(const Instruction *instruction, const char *asmLine);
 AssembledOperation assemble_stores_branches(const Instruction *instruction, const char *asmLine);
 AssembledOperation assemble_shift_immediates(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_byte_instruction(const Instruction *instruction, const char *asmLine);
 
 #endif

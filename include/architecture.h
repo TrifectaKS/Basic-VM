@@ -15,6 +15,11 @@
 #define STACK_ADDR     0xFF00
 #define STACK_SIZE     256
 
+// Display dimensions
+#define DISPLAY_WIDTH  640
+#define DISPLAY_HEIGHT 480
+#define DISPLAY_SIZE   (DISPLAY_WIDTH * DISPLAY_HEIGHT)
+
 struct BasicVm
 {
     uint8_t registers[16];
@@ -26,6 +31,7 @@ struct BasicVm
     uint8_t stack_pointer;
     uint8_t delay_timer;
     uint8_t sound_timer;
+    uint32_t display_buffer[DISPLAY_SIZE];
 };
 
 #endif

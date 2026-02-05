@@ -1,5 +1,6 @@
 #include "vm_instruction.h"
 #include "config.h"
+#include "display.h"
 #include <stdio.h>
 
 #ifndef DISABLE_EXECUTION
@@ -210,6 +211,36 @@ void vm_execute_instruction(BasicVm *vm, DecodedInstruction dec, uint16_t next_p
                         vm->registers[dec.rd] = vm->registers[dec.rs1] >> (dec.imm & 0x1F);
                     }
                     break;
+            }
+            vm->program_counter = next_pc;
+            break;
+
+        case 0x0B: // Display
+            switch (dec.funct3) {
+                case 0x00: // CLS: clear screen
+                    display_clear(vm);
+                    break;
+                case 0x01: { // CHAR: draw character
+                    uint8_t font_idx = dec.rd;       // font character index
+                    uint8_t x = dec.rs1;              // x position
+                    uint8_t y = dec.rs2;              // y position
+                    // Draw 8x8 character from font space at (x*8, y*8)
+                    uint16_t font_addr = FONT_ADDR + (font_idx * 8);
+                    uint16_t screen_x = x * 8;
+                    uint16_t screen_y = y * 8;
+                    for (int row = 0; row < 8; row++) {
+                        uint8_t font_row = vm->memory[font_addr + row];
+                        for (int col = 0; col < 8; col++) {
+                            if (font_row & (0x80 >> col)) {
+                                uint32_t pixel_idx = (screen_y + row) * DISPLAY_WIDTH + (screen_x + col);
+                                if (pixel_idx < DISPLAY_SIZE) {
+                                    vm->display_buffer[pixel_idx] = 0xFFFFFFFF; // white
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
             }
             vm->program_counter = next_pc;
             break;

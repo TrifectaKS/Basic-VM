@@ -1,5 +1,18 @@
 #include "asm.h"
 
+AssembledOperation handle_byte_instruction(Instruction *instruction, char asmLineBuffer[256])
+{
+  switch (instruction->funct3)
+  {
+  case 0x07:
+  case 0x00:
+  {
+    return assemble_byte_instruction(instruction, asmLineBuffer);
+  }
+  }
+  return InvalidOperation;
+}
+
 AssembledOperation handle_funct3_artihmetic(Instruction *instruction, char asmLineBuffer[256])
 {
   switch (instruction->funct3)
@@ -143,6 +156,8 @@ AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[25
 {
   switch (instruction->opcode)
   {
+  case 0x1F:// Byte Instructions
+    return handle_byte_instruction(instruction, asmLineBuffer);
   case 0x01: return handle_funct3_artihmetic(instruction, asmLineBuffer);
   case 0x02: return handle_funct3_immediates(instruction, asmLineBuffer);
   case 0x03: return handle_funct3_upper_immediates(instruction, asmLineBuffer);
