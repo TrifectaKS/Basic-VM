@@ -32,4 +32,6 @@ SLL r1, r2, r3
 SRL r1, r2, r3
 SLLI r1, r2, 0xe
 SRLI r1, r2, 0xf
+CLS
+CHAR r1, r2, r3
 HALT
