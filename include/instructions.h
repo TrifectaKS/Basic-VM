@@ -16,17 +16,14 @@ typedef struct {
   const char *name;
   uint8_t opcode;
   uint8_t funct3;
-  uint8_t opcode_funct3;
   uint8_t funct4;
-  uint8_t length;
 } Instruction;
 
 extern Instruction instructions[];
 
 Instruction *get_instruction_by_alias(char *instructionStr);
 Instruction *get_instruction_by_asm(const char *asmLine);
-Instruction *get_instruction_by_opcode_funct3(uint8_t opcode, uint8_t funct3);
-Instruction *get_instruction_by_opcodefunct3(uint8_t opcodefunct3);
+Instruction *get_instruction_by_opcode(uint8_t opcode);
 Instruction *get_instruction_by_all(uint8_t opcode, uint8_t funct3, uint8_t funct4);
 
 #endif

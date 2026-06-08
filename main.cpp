@@ -1,5 +1,4 @@
 #include "asm_main.h"
-#include "vm_main.h"
 #include "raylib.h"
 
 //------------------------------------------------------------------------------------
@@ -19,7 +18,6 @@ int main(void)
 
 
     asm_main();
-    vm_main(0, nullptr);
 /*
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key

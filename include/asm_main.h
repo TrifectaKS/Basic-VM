@@ -3,6 +3,6 @@
 
 #include "asm.h"
 
-int asm_main();
+int asm_main(const char *asmFilePath, const char *romFilePath);
 
 #endif

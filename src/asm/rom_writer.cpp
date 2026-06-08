@@ -3,7 +3,7 @@
 
 BytePack pack_bytes(Instruction* instruction, uint32_t result) {
     BytePack pack = {0};
-    pack.count = instruction->length / 8;
+    pack.count = 4;
 
     for (uint8_t i = 0; i < pack.count; i++) {
         pack.bytes[i] = (result >> (i * 8)) & 0xFF;

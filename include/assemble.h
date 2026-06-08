@@ -10,10 +10,24 @@
 #include <stdint.h>
 #include <strings.h>
 #include <string.h>
+#include "uthash.h"
+
+#define MAX_LABEL_LENGTH 32
+
+typedef struct {
+    char name[MAX_LABEL_LENGTH];
+    uint32_t address;
+    UT_hash_handle hh;
+} Label;
+
+void clear_labels(void);
+int add_label(const char *name, uint32_t address);
+Label *find_label(const char *name);
+int is_label(const char *str);
+uint32_t resolve_label(const char *name, uint32_t current_pc, bool is_branch);
 
 uint8_t register_to_byte(const char *reg);
 uint32_t imm_to_word_unsigned(const char *immStr);
-uint8_t imm_to_half_word_unsigned(const char *immStr);
 uint16_t imm_to_word_signed(const char *immStr);
 
 typedef struct {
@@ -23,13 +37,14 @@ typedef struct {
 
 const AssembledOperation InvalidOperation = { .value = 0, .hasValue = false };
 
-AssembledOperation assemble_arithmetic_bitwise(const Instruction *instruction, const char *asmLine);
-AssembledOperation assemble_immediates_loads(const Instruction *instruction, const char *asmLine);
-AssembledOperation assemble_upper_immediates(const Instruction *instruction, const char *asmLine);
-AssembledOperation assemble_jumps(const Instruction *instruction, const char *asmLine);
-AssembledOperation assemble_jumps_register(const Instruction *instruction, const char *asmLine);
-AssembledOperation assemble_stores_branches(const Instruction *instruction, const char *asmLine);
-AssembledOperation assemble_shift_immediates(const Instruction *instruction, const char *asmLine);
-AssembledOperation assemble_byte_instruction(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_rtype(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_itype(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_store(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_branch(const Instruction *instruction, const char *asmLine, uint32_t current_pc);
+AssembledOperation assemble_jal(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_jalr(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_lui(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_sys(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_nop(const Instruction *instruction, const char *asmLine);
 
 #endif

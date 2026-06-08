@@ -4,10 +4,7 @@
 // Uncomment to enable debug output for the assembler
 #define DEBUG
 
-// Uncomment to enable verbose output for the VM
-//#define VERBOSE
-
-// Uncomment to disable instruction execution (useful for testing assembler only)
-#define DISABLE_EXECUTION
+// Uncomment to enable error logging to rom.bin.log
+#define DEBUG_LOG
 
 #endif // CONFIG_H
