@@ -10,6 +10,6 @@ clang asm_main_stub.cpp src/asm/*.cpp \
     -Iinclude -Isrc \
     -o output/asm_debug \
     -std=c++11 \
-    -DDEBUG -DDEBUG_LOG
+    -DDEBUG
 
 echo "Built: ./output/asm (debug)"

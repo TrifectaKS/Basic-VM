@@ -5,7 +5,7 @@
 TESTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$TESTS_DIR"
 
-ASM="../../output/asm"
+ASM="../output/asm"
 PASS_DIR="pass"
 FAIL_DIR="fail"
 

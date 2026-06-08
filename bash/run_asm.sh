@@ -11,4 +11,4 @@ if [ $# -ne 2 ]; then
     exit 1
 fi
 
-./output/asm "$1" "$2"
+./output/asm_debug_opt "$1" "$2"
