@@ -1,0 +1,1 @@
+JALR r1, r2, 0xFFF

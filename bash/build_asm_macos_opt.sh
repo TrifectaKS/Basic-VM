@@ -8,8 +8,8 @@ mkdir -p output
 
 clang asm_main_stub.cpp src/asm/*.cpp \
     -Iinclude -Isrc \
-    -o output/asm \
+    -o output/asm_opt \
     -std=c++11 \
-    -Os -s -flto
+    -Os -flto -Wl,-x
 
 echo "Built: ./output/asm (size optimized)"

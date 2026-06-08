@@ -1,4 +1,3 @@
-#include "config.h"
 #include "asm.h"
 #include <assert.h>
 #include <string.h>
@@ -125,7 +124,9 @@ int asm_main(const char *asmFilePath, const char *romFilePath)
       continue;
     }
     
+#ifdef DEBUG
     printf("----------------\n%s\n", asmLineBuffer);
+#endif
     Instruction *instruction = get_instruction_by_asm(asmLineBuffer);
 
     if (instruction == NULL)

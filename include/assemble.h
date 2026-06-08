@@ -26,9 +26,11 @@ Label *find_label(const char *name);
 int is_label(const char *str);
 uint32_t resolve_label(const char *name, uint32_t current_pc, bool is_branch);
 
-uint8_t register_to_byte(const char *reg);
+int8_t register_to_byte(const char *reg);
 uint32_t imm_to_word_unsigned(const char *immStr);
 uint16_t imm_to_word_signed(const char *immStr);
+int parse_immediate_signed(const char *immStr, int16_t *out_value);
+int parse_immediate_unsigned(const char *immStr, uint16_t max_value, uint16_t *out_value);
 
 typedef struct {
   uint32_t value;

@@ -1,0 +1,1 @@
+XORI r1, r2, 0xFFF

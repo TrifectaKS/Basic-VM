@@ -15,8 +15,8 @@
 typedef struct {
   const char *name;
   uint8_t opcode;
-  uint8_t funct3;
   uint8_t funct4;
+  uint8_t funct3;
 } Instruction;
 
 extern Instruction instructions[];
