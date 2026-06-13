@@ -13,6 +13,7 @@
 #include "uthash.h"
 
 #define MAX_LABEL_LENGTH 32
+#define MAX_VAR_NAME_LENGTH 32
 
 typedef struct {
     char name[MAX_LABEL_LENGTH];
@@ -20,11 +21,21 @@ typedef struct {
     UT_hash_handle hh;
 } Label;
 
+typedef struct {
+    char name[MAX_VAR_NAME_LENGTH];
+    uint32_t value;
+    UT_hash_handle hh;
+} Variable;
+
 void clear_labels(void);
 int add_label(const char *name, uint32_t address);
 Label *find_label(const char *name);
 int is_label(const char *str);
 uint32_t resolve_label(const char *name, uint32_t current_pc, bool is_branch);
+
+void clear_variables(void);
+int add_variable(const char *name, uint32_t value);
+Variable *find_variable(const char *name);
 
 int8_t register_to_byte(const char *reg);
 uint32_t imm_to_word_unsigned(const char *immStr);

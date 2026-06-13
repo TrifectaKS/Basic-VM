@@ -101,12 +101,71 @@ static int extract_label_name(const char *line, char *name, size_t max_len) {
     return 0;
 }
 
+static int is_variable_definition(const char *line) {
+    size_t len = strlen(line);
+    if (len == 0) return 0;
+    
+    size_t i = 0;
+    while (i < len && isspace(line[i])) i++;
+    if (i >= len || (!isalpha(line[i]) && line[i] != '_')) return 0;
+    
+    size_t start = i;
+    while (i < len && (isalnum(line[i]) || line[i] == '_')) i++;
+    
+    while (i < len && isspace(line[i])) i++;
+    
+    if (i >= len || line[i] != '=') return 0;
+    
+    i++;
+    
+    while (i < len && isspace(line[i])) i++;
+    
+    if (i >= len) return 0;
+    
+    return 1;
+}
+
+static int extract_variable_name_and_value(const char *line, char *name, size_t max_name_len, uint32_t *out_value) {
+    size_t i = 0;
+    while (isspace(line[i])) i++;
+    
+    size_t start = i;
+    while (i < max_name_len && (isalnum(line[i]) || line[i] == '_')) i++;
+    
+    size_t name_len = i - start;
+    if (name_len >= max_name_len) name_len = max_name_len - 1;
+    
+    strncpy(name, line + start, name_len);
+    name[name_len] = '\0';
+    
+    for (size_t j = 0; name[j]; j++) {
+        name[j] = tolower(name[j]);
+    }
+    
+    while (i < strlen(line) && isspace(line[i])) i++;
+    if (i >= strlen(line) || line[i] != '=') return 0;
+    i++;
+    
+    while (i < strlen(line) && isspace(line[i])) i++;
+    if (i >= strlen(line)) return 0;
+    
+    char *endptr = NULL;
+    unsigned long value = strtoul(line + i, &endptr, 0);
+    if (*endptr != '\0' && *endptr != ';' && *endptr != '\n' && *endptr != '\r') {
+        return 0;
+    }
+    
+    *out_value = (uint32_t)value;
+    return 1;
+}
+
 int asm_main(const char *asmFilePath, const char *romFilePath)
 {
     open_log_file(romFilePath);
     debug_printf("=== Assembly started: %s -> %s ===\n", asmFilePath, romFilePath);
 
     clear_labels();
+    clear_variables();
     
     FILE *asmFile = fopen(asmFilePath, "r");
     if (asmFile == NULL)
@@ -135,6 +194,30 @@ int asm_main(const char *asmFilePath, const char *romFilePath)
                 write_error(romFilePath, line_num, asmLineBuffer, "Duplicate label definition");
                 fclose(asmFile);
                 clear_labels();
+                clear_variables();
+                close_log_file();
+                return 1;
+            }
+            continue;
+        }
+        
+        if (is_variable_definition(asmLineBuffer)) {
+            char var_name[MAX_VAR_NAME_LENGTH];
+            uint32_t var_value;
+            if (extract_variable_name_and_value(asmLineBuffer, var_name, MAX_VAR_NAME_LENGTH, &var_value) == 0) {
+                write_error(romFilePath, line_num, asmLineBuffer, "Invalid variable definition");
+                fclose(asmFile);
+                clear_labels();
+                clear_variables();
+                close_log_file();
+                return 1;
+            }
+            
+            if (add_variable(var_name, var_value) != 0) {
+                write_error(romFilePath, line_num, asmLineBuffer, "Duplicate variable definition");
+                fclose(asmFile);
+                clear_labels();
+                clear_variables();
                 close_log_file();
                 return 1;
             }
@@ -152,6 +235,7 @@ int asm_main(const char *asmFilePath, const char *romFilePath)
         perror("Error opening .rom file");
         fclose(asmFile);
         clear_labels();
+        clear_variables();
         close_log_file();
         return 1;
     }
@@ -169,6 +253,10 @@ int asm_main(const char *asmFilePath, const char *romFilePath)
             continue;
         }
         
+        if (is_variable_definition(asmLineBuffer)) {
+            continue;
+        }
+        
         debug_printf("----------------\n%s\n", asmLineBuffer);
         Instruction *instruction = get_instruction_by_asm(asmLineBuffer);
 
@@ -178,6 +266,7 @@ int asm_main(const char *asmFilePath, const char *romFilePath)
             fclose(asmFile);
             fclose(romFile);
             clear_labels();
+            clear_variables();
             close_log_file();
             return 1;
         }
@@ -199,6 +288,7 @@ int asm_main(const char *asmFilePath, const char *romFilePath)
             fclose(asmFile);
             fclose(romFile);
             clear_labels();
+            clear_variables();
             close_log_file();
             return 1;
         }
@@ -214,6 +304,7 @@ int asm_main(const char *asmFilePath, const char *romFilePath)
     fclose(asmFile);
     fclose(romFile);
     clear_labels();
+    clear_variables();
     close_log_file();
 
     return 0;

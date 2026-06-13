@@ -1,6 +1,7 @@
 #include "assemble.h"
 
 static Label *labels = NULL;
+static Variable *variables = NULL;
 
 void clear_labels(void) {
     Label *current, *tmp;
@@ -49,6 +50,53 @@ Label *find_label(const char *name) {
     return result;
 }
 
+void clear_variables(void) {
+    Variable *current, *tmp;
+    HASH_ITER(hh, variables, current, tmp) {
+        HASH_DEL(variables, current);
+        free(current);
+    }
+    variables = NULL;
+}
+
+int add_variable(const char *name, uint32_t value) {
+    Variable *existing = NULL;
+    char name_lower[MAX_VAR_NAME_LENGTH];
+    strncpy(name_lower, name, MAX_VAR_NAME_LENGTH - 1);
+    name_lower[MAX_VAR_NAME_LENGTH - 1] = '\0';
+    for (int i = 0; name_lower[i]; i++) {
+        name_lower[i] = tolower(name_lower[i]);
+    }
+    
+    HASH_FIND(hh, variables, name_lower, strlen(name_lower), existing);
+    if (existing) {
+        return -1;
+    }
+    
+    Variable *new_var = (Variable *)malloc(sizeof(Variable));
+    if (!new_var) return -1;
+    
+    strncpy(new_var->name, name_lower, MAX_VAR_NAME_LENGTH - 1);
+    new_var->name[MAX_VAR_NAME_LENGTH - 1] = '\0';
+    new_var->value = value;
+    
+    HASH_ADD(hh, variables, name, strlen(name_lower), new_var);
+    return 0;
+}
+
+Variable *find_variable(const char *name) {
+    char name_lower[MAX_VAR_NAME_LENGTH];
+    strncpy(name_lower, name, MAX_VAR_NAME_LENGTH - 1);
+    name_lower[MAX_VAR_NAME_LENGTH - 1] = '\0';
+    for (int i = 0; name_lower[i]; i++) {
+        name_lower[i] = tolower(name_lower[i]);
+    }
+    
+    Variable *result = NULL;
+    HASH_FIND(hh, variables, name_lower, strlen(name_lower), result);
+    return result;
+}
+
 int is_label(const char *str) {
     if (!str || *str == '\0') return 0;
     
@@ -91,6 +139,14 @@ int8_t register_to_byte(const char *reg) {
 
 int parse_immediate_unsigned(const char *immStr, uint16_t max_value, uint16_t *out_value) {
     if (immStr == NULL || *immStr == '\0') return 0;
+    
+    Variable *var = find_variable(immStr);
+    if (var) {
+        if (var->value > max_value) return 0;
+        *out_value = (uint16_t)var->value;
+        return 1;
+    }
+    
     char *endptr = NULL;
     unsigned long value = strtoul(immStr, &endptr, 0);
     if (*endptr != '\0') return 0;

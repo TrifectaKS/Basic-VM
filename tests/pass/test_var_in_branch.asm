@@ -1,0 +1,3 @@
+MY_VAR = 0x10
+BEQ r1, r2, MY_VAR
+MY_VAR:

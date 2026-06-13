@@ -1,0 +1,2 @@
+BANK_REG = 35
+ADDI r1, r2, BANK_REG

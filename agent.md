@@ -36,20 +36,35 @@ Basic-VM/
 ```
 
 ## Assembler Features
-- **Two-pass assembly**: Labels collected in pass 1, resolved in pass 2
+- **Two-pass assembly**: Labels and variables collected in pass 1, resolved in pass 2
 - **Label support**: Global labels for branches/jumps (32 chars max, case insensitive)
+- **Variable support**: Named constants for immediate values (32 chars max, case insensitive, 12-bit bounds)
 - **Error logging**: When DEBUG_LOG is defined, errors written to `<output>.log`
 - **Output format**: 32-bit instructions, little-endian
+
+### ASM Variables
+Variables are named constants that can be used anywhere an immediate value is expected:
+```asm
+BANK_ADDR = 0x100
+CONFIG_VAL = 0xFF
+ADDI r1, r2, BANK_ADDR   ; Use variable as immediate
+SW r1, r2, CONFIG_VAL    ; Variables work in all immediate fields
+```
+- **Syntax**: `NAME = value` (whitespace around `=` optional)
+- **Value formats**: Hex (`0x123`) or decimal (`291`)
+- **Bounds**: Values must fit in 12-bit immediate field (max 0xFFF)
+- **Case insensitive**: `BANK_REG` and `bank_reg` refer to the same variable
+- **Error on duplicate**: Duplicate variable definitions produce an error
 
 ## Key Files
 | File | Purpose |
 |------|---------|
-| `src/asm/asm_main.cpp` | Main assembler logic, two-pass, error handling |
-| `src/asm/assemble.cpp` | Instruction encoding, label resolution |
+| `src/asm/asm_main.cpp` | Main assembler logic, two-pass, error handling, variable detection |
+| `src/asm/assemble.cpp` | Instruction encoding, label resolution, variable resolution |
 | `src/asm/instructions.cpp` | Instruction table (matches ISA) |
 | `src/asm/rom_writer.cpp` | ROM file writing |
 | `include/asm.h` | Assembler interface |
-| `include/assemble.h` | Label structs and functions |
+| `include/assemble.h` | Label and Variable structs and functions |
 
 ## Debug Output
 When DEBUG is defined:
@@ -63,7 +78,9 @@ When DEBUG_LOG is defined:
 - **No config.h**: Debug flags are passed via `-D` at build time
 - **printf wrapped with #ifdef DEBUG**: Debug output only with debug builds
 - **Labels**: Case insensitive, max 32 chars, global scope only
+- **Variables**: Case insensitive, max 32 chars, 12-bit bounds (max 0xFFF)
 - **Test suite must be updated**: When adding/removing instructions from `instructions.cpp`, update `roms/tests/` accordingly (add new pass tests, remove stale ones)
+- **Variable tests**: When adding variable support, add tests in `tests/pass/` and `tests/fail/`
 
 ## Workflow
 1. Edit source files in `src/asm/` or `include/`
