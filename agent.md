@@ -59,11 +59,13 @@ SW r1, r2, CONFIG_VAL    ; Variables work in all immediate fields
 ## Key Files
 | File | Purpose |
 |------|---------|
-| `src/asm/asm_main.cpp` | Main assembler logic, two-pass, error handling, variable detection |
+| `src/asm/asm_main.cpp` | Main assembler logic, two-pass, error handling |
+| `src/asm/asm_utils.cpp` | Utility functions for parsing (labels, variables, comments) |
 | `src/asm/assemble.cpp` | Instruction encoding, label resolution, variable resolution |
 | `src/asm/instructions.cpp` | Instruction table (matches ISA) |
 | `src/asm/rom_writer.cpp` | ROM file writing |
 | `include/asm.h` | Assembler interface |
+| `include/asm_utils.h` | Utility function declarations |
 | `include/assemble.h` | Label and Variable structs and functions |
 
 ## Debug Output
