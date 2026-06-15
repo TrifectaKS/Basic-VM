@@ -211,7 +211,7 @@ AssembledOperation assemble_rtype(const Instruction *instruction, const char *as
         return (AssembledOperation){.hasValue = false};
     }
     uint32_t insOp = encode_base(instruction);
-    insOp |= encode_rd(rd) | encode_rs1(rs1) | encode_rs2(rs2);
+    insOp |= encode_r1(rd) | encode_r2(rs1) | encode_r3(rs2);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -237,7 +237,7 @@ AssembledOperation assemble_itype(const Instruction *instruction, const char *as
     }
 
     uint32_t insOp = encode_base(instruction);
-    insOp |= encode_rd(rd) | encode_rs1(rs1) | encode_imm(20, 12, imm);
+    insOp |= encode_r1(rd) | encode_r2(rs1) | encode_imm(20, 12, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -263,7 +263,7 @@ AssembledOperation assemble_store(const Instruction *instruction, const char *as
     }
 
     uint32_t insOp = encode_base(instruction);
-    insOp |= encode_rs1(rs1) | encode_rs2(rs2) | encode_imm(20, 12, imm);
+    insOp |= encode_r2(rs1) | encode_r3(rs2) | encode_imm(20, 12, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -299,7 +299,7 @@ AssembledOperation assemble_branch(const Instruction *instruction, const char *a
     }
     
     uint32_t insOp = encode_base(instruction);
-    insOp |= encode_rs1(rs1) | encode_rs2(rs2) | encode_imm(20, 12, imm);
+    insOp |= encode_r2(rs1) | encode_r3(rs2) | encode_imm(20, 12, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -332,7 +332,7 @@ AssembledOperation assemble_jal(const Instruction *instruction, const char *asmL
     }
 
     uint32_t insOp = encode_base(instruction);
-    insOp |= encode_rd(rd) | encode_imm(16, 16, imm);
+    insOp |= encode_r1(rd) | encode_imm(16, 16, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -367,7 +367,7 @@ AssembledOperation assemble_jalr(const Instruction *instruction, const char *asm
     }
 
     uint32_t insOp = encode_base(instruction);
-    insOp |= encode_rd(rd) | encode_rs1(rs1) | encode_imm(20, 12, imm);
+    insOp |= encode_r1(rd) | encode_r2(rs1) | encode_imm(20, 12, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -391,7 +391,7 @@ AssembledOperation assemble_lui(const Instruction *instruction, const char *asmL
     }
 
     uint32_t insOp = encode_base(instruction);
-    insOp |= encode_rd(rd) | encode_imm(16, 16, imm);
+    insOp |= encode_r1(rd) | encode_imm(16, 16, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -460,7 +460,7 @@ AssembledOperation assemble_push(const Instruction *instruction, const char *asm
     }
     
     uint32_t insOp = encode_base(instruction);
-    insOp |= encode_rs1(rd);
+    insOp |= encode_r2(rd);
     
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -478,7 +478,7 @@ AssembledOperation assemble_pop(const Instruction *instruction, const char *asmL
     }
     
     uint32_t insOp = encode_base(instruction);
-    insOp |= encode_rd(rd) | encode_rs1(rd);
+    insOp |= encode_r1(rd) | encode_r2(rd);
     
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
