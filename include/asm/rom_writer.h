@@ -1,10 +1,10 @@
 #ifndef ROM_WRITER_H
 #define ROM_WRITER_H
 
-#include "instructions.h"
+#include "asm/instructions.h"
 
 #ifdef DEBUG
-#include "debug_utils.h"
+#include "shared/debug_utils.h"
 #endif
 
 typedef struct {

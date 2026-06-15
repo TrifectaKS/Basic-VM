@@ -1,4 +1,4 @@
-#include "instructions.h"
+#include "asm/instructions.h"
 
 Instruction instructions[] = {
     {"NOP", 0x0, 0x0, 0x0},

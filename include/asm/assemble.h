@@ -1,9 +1,9 @@
 #ifndef ASSEMBLE_H
 #define ASSEMBLE_H
 
-#include "debug_utils.h"
-#include "instructions.h"
-#include "arch_isa.h"
+#include "shared/debug_utils.h"
+#include "asm/instructions.h"
+#include "shared/arch_isa.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <strings.h>
 #include <string.h>
-#include "uthash.h"
+#include "shared/uthash.h"
 
 #define MAX_LABEL_LENGTH 32
 #define MAX_VAR_NAME_LENGTH 32

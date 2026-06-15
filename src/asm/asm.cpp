@@ -1,4 +1,4 @@
-#include "asm.h"
+#include "asm/asm.h"
 
 AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[256], uint32_t current_pc)
 {
