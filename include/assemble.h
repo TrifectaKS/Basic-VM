@@ -53,6 +53,23 @@ static inline uint32_t encode_base(const Instruction *instruction) {
            ((instruction->funct4 & 0xF) << 8);
 }
 
+static inline uint32_t encode_rd(uint8_t rd) {
+    return (rd & 0xF) << 12;
+}
+
+static inline uint32_t encode_rs1(uint8_t rs1) {
+    return (rs1 & 0xF) << 16;
+}
+
+static inline uint32_t encode_rs2(uint8_t rs2) {
+    return (rs2 & 0xF) << 20;
+}
+
+static inline uint32_t encode_imm(int start_bit, int num_bits, uint32_t imm) {
+    uint32_t mask = (1 << num_bits) - 1;
+    return (imm & mask) << start_bit;
+}
+
 typedef struct {
   uint32_t value;
   bool hasValue;

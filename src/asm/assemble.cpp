@@ -211,9 +211,7 @@ AssembledOperation assemble_rtype(const Instruction *instruction, const char *as
         return (AssembledOperation){.hasValue = false};
     }
     uint32_t insOp = encode_base(instruction);
-    insOp |= ((uint8_t)rd & 0xF) << 12;
-    insOp |= ((uint8_t)rs1 & 0xF) << 16;
-    insOp |= ((uint8_t)rs2 & 0xF) << 20;
+    insOp |= encode_rd(rd) | encode_rs1(rs1) | encode_rs2(rs2);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -239,10 +237,7 @@ AssembledOperation assemble_itype(const Instruction *instruction, const char *as
     }
 
     uint32_t insOp = encode_base(instruction);
-    insOp |= ((uint8_t)rd & 0xF) << 12;
-    insOp |= ((uint8_t)rs1 & 0xF) << 16;
-    insOp |= (imm & 0xF) << 20;
-    insOp |= ((imm >> 4) & 0xFF) << 24;
+    insOp |= encode_rd(rd) | encode_rs1(rs1) | encode_imm(20, 12, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -268,10 +263,7 @@ AssembledOperation assemble_store(const Instruction *instruction, const char *as
     }
 
     uint32_t insOp = encode_base(instruction);
-    insOp |= ((uint8_t)rs1 & 0xF) << 12;
-    insOp |= ((uint8_t)rs2 & 0xF) << 16;
-    insOp |= (imm& 0xF) << 20;
-    insOp |= ((imm >> 4) & 0xFF) << 24;
+    insOp |= encode_rs1(rs1) | encode_rs2(rs2) | encode_imm(20, 12, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -307,10 +299,7 @@ AssembledOperation assemble_branch(const Instruction *instruction, const char *a
     }
     
     uint32_t insOp = encode_base(instruction);
-    insOp |= ((uint8_t)rs1 & 0xF) << 12;
-    insOp |= ((uint8_t)rs2 & 0xF) << 16;
-    insOp |= (imm& 0xF) << 20;
-    insOp |= ((imm >> 4) & 0xFF) << 24;
+    insOp |= encode_rs1(rs1) | encode_rs2(rs2) | encode_imm(20, 12, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -343,10 +332,7 @@ AssembledOperation assemble_jal(const Instruction *instruction, const char *asmL
     }
 
     uint32_t insOp = encode_base(instruction);
-    insOp |= ((uint8_t)rd & 0xF) << 12;
-    insOp |= (imm & 0xF) << 16;
-    insOp |= ((imm >> 4)& 0xFF) << 20;
-    insOp |= ((imm >> 12)& 0xF) << 28;
+    insOp |= encode_rd(rd) | encode_imm(16, 16, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -381,14 +367,10 @@ AssembledOperation assemble_jalr(const Instruction *instruction, const char *asm
     }
 
     uint32_t insOp = encode_base(instruction);
-    insOp |= ((uint8_t)rd & 0xF) << 12;
-    insOp |= ((uint8_t)rs1 & 0xF) << 16;
-    insOp |= (imm & 0xF) << 20;
-    insOp |= ((imm >> 4)& 0xFF) << 24;
+    insOp |= encode_rd(rd) | encode_rs1(rs1) | encode_imm(20, 12, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
-
 
 AssembledOperation assemble_lui(const Instruction *instruction, const char *asmLine) {
     char rdStr[5], immStr[10];
@@ -409,14 +391,10 @@ AssembledOperation assemble_lui(const Instruction *instruction, const char *asmL
     }
 
     uint32_t insOp = encode_base(instruction);
-    insOp |= ((uint8_t)rd & 0xF) << 12;
-    insOp |= (imm& 0xF) << 16;
-    insOp |= ((imm >> 4)& 0xFF) << 20;
-    insOp |= ((imm >> 12)& 0xF) << 28;
+    insOp |= encode_rd(rd) | encode_imm(16, 16, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
-
 
 AssembledOperation assemble_sys(const Instruction *instruction, const char *asmLine) {
     char instructionStr[20];
@@ -442,7 +420,7 @@ AssembledOperation assemble_sys(const Instruction *instruction, const char *asmL
     }
 
     uint32_t insOp = encode_base(instruction);
-    insOp |= (imm & 0xFF) << 24;
+    insOp |= encode_imm(12, 8, imm);
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -482,7 +460,7 @@ AssembledOperation assemble_push(const Instruction *instruction, const char *asm
     }
     
     uint32_t insOp = encode_base(instruction);
-    insOp |= (rd & 0xF) << 12;
+    insOp |= encode_rs1(rd);
     
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -500,7 +478,7 @@ AssembledOperation assemble_pop(const Instruction *instruction, const char *asmL
     }
     
     uint32_t insOp = encode_base(instruction);
-    insOp |= (rd & 0xF) << 12;
+    insOp |= encode_rd(rd) | encode_rs1(rd);
     
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
@@ -527,9 +505,7 @@ AssembledOperation assemble_call(const Instruction *instruction, const char *asm
     }
     
     uint32_t insOp = encode_base(instruction);
-    insOp |= (imm & 0xF) << 12;
-    insOp |= ((imm >> 4) & 0xFF) << 16;
-    insOp |= ((imm >> 12) & 0xF) << 24;
+    insOp |= encode_imm(12, 20, imm);
     
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }
