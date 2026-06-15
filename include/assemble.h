@@ -3,6 +3,7 @@
 
 #include "debug_utils.h"
 #include "instructions.h"
+#include "arch_isa.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -43,6 +44,15 @@ uint16_t imm_to_word_signed(const char *immStr);
 int parse_immediate_signed(const char *immStr, int16_t *out_value);
 int parse_immediate_unsigned(const char *immStr, uint16_t max_value, uint16_t *out_value);
 
+int is_reserved_register(const char *regStr);
+int validate_not_reserved(int8_t reg, const char *instr_name);
+
+static inline uint32_t encode_base(const Instruction *instruction) {
+    return (instruction->funct3 & 0x7) |
+           ((instruction->opcode & 0x1F) << 3) |
+           ((instruction->funct4 & 0xF) << 8);
+}
+
 typedef struct {
   uint32_t value;
   bool hasValue;
@@ -59,5 +69,9 @@ AssembledOperation assemble_jalr(const Instruction *instruction, const char *asm
 AssembledOperation assemble_lui(const Instruction *instruction, const char *asmLine);
 AssembledOperation assemble_sys(const Instruction *instruction, const char *asmLine);
 AssembledOperation assemble_nop(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_push(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_pop(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_call(const Instruction *instruction, const char *asmLine);
+AssembledOperation assemble_ret(const Instruction *instruction, const char *asmLine);
 
 #endif

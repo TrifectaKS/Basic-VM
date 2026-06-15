@@ -134,6 +134,13 @@ int8_t register_to_byte(const char *reg) {
       return (int8_t)value;
     }
   }
+  
+  static const ReservedRegister reserved_registers[] = {RESERVED_REGISTERS};
+  for (int i = 0; i < NUM_RESERVED_REGISTERS; i++) {
+    if (strcasecmp(reg, reserved_registers[i].name) == 0) {
+      return reserved_registers[i].reg_num;
+    }
+  }
   return -1;
 }
 
@@ -203,11 +210,7 @@ AssembledOperation assemble_rtype(const Instruction *instruction, const char *as
     if (rd < 0 || rs1 < 0 || rs2 < 0) {
         return (AssembledOperation){.hasValue = false};
     }
-    uint32_t insOp = 0;
-
-    insOp |= (instruction->funct3 & 0x7);
-    insOp |= (instruction->opcode& 0x1F) << 3;
-    insOp |= (instruction->funct4 & 0xF) << 8;
+    uint32_t insOp = encode_base(instruction);
     insOp |= ((uint8_t)rd & 0xF) << 12;
     insOp |= ((uint8_t)rs1 & 0xF) << 16;
     insOp |= ((uint8_t)rs2 & 0xF) << 20;
@@ -235,11 +238,7 @@ AssembledOperation assemble_itype(const Instruction *instruction, const char *as
         return (AssembledOperation){.hasValue = false};
     }
 
-    uint32_t insOp = 0;
-
-    insOp |= (instruction->funct3 & 0x7);
-    insOp |= (instruction->opcode& 0x1F) << 3;
-    insOp |= (instruction->funct4 & 0xF) << 8;
+    uint32_t insOp = encode_base(instruction);
     insOp |= ((uint8_t)rd & 0xF) << 12;
     insOp |= ((uint8_t)rs1 & 0xF) << 16;
     insOp |= (imm & 0xF) << 20;
@@ -268,11 +267,7 @@ AssembledOperation assemble_store(const Instruction *instruction, const char *as
         return (AssembledOperation){.hasValue = false};
     }
 
-    uint32_t insOp = 0;
-
-    insOp |= (instruction->funct3 & 0x7);
-    insOp |= (instruction->opcode& 0x1F) << 3;
-    insOp |= (instruction->funct4 & 0xF) << 8;
+    uint32_t insOp = encode_base(instruction);
     insOp |= ((uint8_t)rs1 & 0xF) << 12;
     insOp |= ((uint8_t)rs2 & 0xF) << 16;
     insOp |= (imm& 0xF) << 20;
@@ -311,11 +306,7 @@ AssembledOperation assemble_branch(const Instruction *instruction, const char *a
         imm = (uint32_t)(int16_t)signed_imm;
     }
     
-    uint32_t insOp = 0;
-
-    insOp |= (instruction->funct3 & 0x7);
-    insOp |= (instruction->opcode& 0x1F) << 3;
-    insOp |= (instruction->funct4 & 0xF) << 8;
+    uint32_t insOp = encode_base(instruction);
     insOp |= ((uint8_t)rs1 & 0xF) << 12;
     insOp |= ((uint8_t)rs2 & 0xF) << 16;
     insOp |= (imm& 0xF) << 20;
@@ -351,11 +342,7 @@ AssembledOperation assemble_jal(const Instruction *instruction, const char *asmL
         imm = imm_val;
     }
 
-    uint32_t insOp = 0;
-
-    insOp |= (instruction->funct3 & 0x7);
-    insOp |= (instruction->opcode& 0x1F) << 3;
-    insOp |= (instruction->funct4 & 0xF) << 8;
+    uint32_t insOp = encode_base(instruction);
     insOp |= ((uint8_t)rd & 0xF) << 12;
     insOp |= (imm & 0xF) << 16;
     insOp |= ((imm >> 4)& 0xFF) << 20;
@@ -393,11 +380,7 @@ AssembledOperation assemble_jalr(const Instruction *instruction, const char *asm
         imm = imm_val;
     }
 
-    uint32_t insOp = 0;
-
-    insOp |= (instruction->funct3 & 0x7);
-    insOp |= (instruction->opcode& 0x1F) << 3;
-    insOp |= (instruction->funct4 & 0xF) << 8;
+    uint32_t insOp = encode_base(instruction);
     insOp |= ((uint8_t)rd & 0xF) << 12;
     insOp |= ((uint8_t)rs1 & 0xF) << 16;
     insOp |= (imm & 0xF) << 20;
@@ -425,11 +408,7 @@ AssembledOperation assemble_lui(const Instruction *instruction, const char *asmL
         return (AssembledOperation){.hasValue = false};
     }
 
-    uint32_t insOp = 0;
-
-    insOp |= (instruction->funct3 & 0x7);
-    insOp |= (instruction->opcode& 0x1F) << 3;
-    insOp |= (instruction->funct4 & 0xF) << 8;
+    uint32_t insOp = encode_base(instruction);
     insOp |= ((uint8_t)rd & 0xF) << 12;
     insOp |= (imm& 0xF) << 16;
     insOp |= ((imm >> 4)& 0xFF) << 20;
@@ -462,11 +441,7 @@ AssembledOperation assemble_sys(const Instruction *instruction, const char *asmL
         imm = imm_val;
     }
 
-    uint32_t insOp = 0;
-
-    insOp |= (instruction->funct3 & 0x7);
-    insOp |= (instruction->opcode& 0x1F) << 3;
-    insOp |= (instruction->funct4 & 0xF) << 8;
+    uint32_t insOp = encode_base(instruction);
     insOp |= (imm & 0xFF) << 24;
 
     return (AssembledOperation){.value = insOp, .hasValue = true};
@@ -477,5 +452,90 @@ AssembledOperation assemble_nop(const Instruction *instruction, const char *asmL
     (void)asmLine;
     uint32_t insOp = 0;
     insOp |= (instruction->funct4& 0xF) << 8;
+    return (AssembledOperation){.value = insOp, .hasValue = true};
+}
+
+int is_reserved_register(const char *regStr) {
+    int8_t reg = register_to_byte(regStr);
+    return IS_RESERVED_REG(reg);
+}
+
+int validate_not_reserved(int8_t reg, const char *instr_name) {
+    if (IS_RESERVED_REG(reg)) {
+        fprintf(stderr, "Error: cannot use reserved register %s in %s\n", 
+                (reg == REG_SP) ? "SP" : (reg == REG_LR) ? "LR" : "PC", instr_name);
+        return 0;
+    }
+    return 1;
+}
+
+AssembledOperation assemble_push(const Instruction *instruction, const char *asmLine) {
+    char rdStr[10];
+    int count = sscanf(asmLine, "%*s %s", rdStr);
+    if (count != 1) {
+        return (AssembledOperation){.hasValue = false};
+    }
+    
+    int8_t rd = register_to_byte(rdStr);
+    if (rd < 0 || !validate_not_reserved(rd, "PUSH")) {
+        return (AssembledOperation){.hasValue = false};
+    }
+    
+    uint32_t insOp = encode_base(instruction);
+    insOp |= (rd & 0xF) << 12;
+    
+    return (AssembledOperation){.value = insOp, .hasValue = true};
+}
+
+AssembledOperation assemble_pop(const Instruction *instruction, const char *asmLine) {
+    char rdStr[10];
+    int count = sscanf(asmLine, "%*s %s", rdStr);
+    if (count != 1) {
+        return (AssembledOperation){.hasValue = false};
+    }
+    
+    int8_t rd = register_to_byte(rdStr);
+    if (rd < 0 || !validate_not_reserved(rd, "POP")) {
+        return (AssembledOperation){.hasValue = false};
+    }
+    
+    uint32_t insOp = encode_base(instruction);
+    insOp |= (rd & 0xF) << 12;
+    
+    return (AssembledOperation){.value = insOp, .hasValue = true};
+}
+
+AssembledOperation assemble_call(const Instruction *instruction, const char *asmLine) {
+    char targetStr[20];
+    
+    int count = sscanf(asmLine, "%*s %19[^\n]", targetStr);
+    if (count != 1) {
+        return (AssembledOperation){.hasValue = false};
+    }
+    
+    uint32_t imm;
+    if (is_label(targetStr)) {
+        imm = resolve_label(targetStr, 0, false);
+        if (imm == 0xFFFFFFFF) {
+            return (AssembledOperation){.hasValue = false};
+        }
+    } else {
+        imm = imm_to_word_unsigned(targetStr);
+        if (imm > 0xFFFFF) {
+            return (AssembledOperation){.hasValue = false};
+        }
+    }
+    
+    uint32_t insOp = encode_base(instruction);
+    insOp |= (imm & 0xF) << 12;
+    insOp |= ((imm >> 4) & 0xFF) << 16;
+    insOp |= ((imm >> 12) & 0xF) << 24;
+    
+    return (AssembledOperation){.value = insOp, .hasValue = true};
+}
+
+AssembledOperation assemble_ret(const Instruction *instruction, const char *asmLine) {
+    (void)asmLine;
+    uint32_t insOp = encode_base(instruction);
     return (AssembledOperation){.value = insOp, .hasValue = true};
 }

@@ -49,6 +49,22 @@ int extract_label_name(const char *line, char *name, size_t max_len) {
     return 0;
 }
 
+int extract_label_name_raw(const char *line, char *name, size_t max_len) {
+    size_t i = 0;
+    while (isspace(line[i])) i++;
+    
+    size_t start = i;
+    while (i < max_len && (isalnum(line[i]) || line[i] == '_')) i++;
+    
+    size_t name_len = i - start;
+    if (name_len >= max_len) name_len = max_len - 1;
+    
+    strncpy(name, line + start, name_len);
+    name[name_len] = '\0';
+    
+    return 0;
+}
+
 int is_variable_definition(const char *line) {
     size_t len = strlen(line);
     if (len == 0) return 0;
@@ -105,4 +121,20 @@ int extract_variable_name_and_value(const char *line, char *name, size_t max_nam
     
     *out_value = (uint32_t)value;
     return 1;
+}
+
+int extract_variable_name_raw(const char *line, char *name, size_t max_name_len) {
+    size_t i = 0;
+    while (isspace(line[i])) i++;
+    
+    size_t start = i;
+    while (i < max_name_len && (isalnum(line[i]) || line[i] == '_')) i++;
+    
+    size_t name_len = i - start;
+    if (name_len >= max_name_len) name_len = max_name_len - 1;
+    
+    strncpy(name, line + start, name_len);
+    name[name_len] = '\0';
+    
+    return 0;
 }

@@ -38,9 +38,20 @@ AssembledOperation handle_opcode(Instruction *instruction, char asmLineBuffer[25
         } else {
             return assemble_itype(instruction, asmLineBuffer);
         }
-    case 0x09:
-        return assemble_sys(instruction, asmLineBuffer);
-    default:
+      case 0x09:
+          return assemble_sys(instruction, asmLineBuffer);
+      case 0x0A:
+          if (instruction->funct4 == 0x0) {
+              return assemble_push(instruction, asmLineBuffer);
+          } else if (instruction->funct4 == 0x1) {
+              return assemble_pop(instruction, asmLineBuffer);
+          } else if (instruction->funct4 == 0x2) {
+              return assemble_call(instruction, asmLineBuffer);
+          } else if (instruction->funct4 == 0x3) {
+              return assemble_ret(instruction, asmLineBuffer);
+          }
+          return InvalidOperation;
+      default:
         return InvalidOperation;
     }
 }
