@@ -47,6 +47,9 @@ int parse_immediate_unsigned(const char *immStr, uint16_t max_value, uint16_t *o
 int is_reserved_register(const char *regStr);
 int validate_not_reserved(int8_t reg, const char *instr_name);
 
+int parse_imm_or_label_signed(const char *immStr, uint32_t *out_imm, uint32_t pc, bool is_branch);
+int parse_imm_or_label_unsigned(const char *immStr, uint32_t *out_imm, uint32_t max_val, uint32_t pc, bool is_branch);
+
 static inline uint32_t encode_base(const Instruction *instruction) {
     return (instruction->funct3 & 0x7) |
            ((instruction->opcode & 0x1F) << 3) |

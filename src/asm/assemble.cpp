@@ -195,6 +195,38 @@ uint16_t imm_to_word_signed(const char *immStr) {
     return 0x0000;
 }
 
+int parse_imm_or_label_signed(const char *immStr, uint32_t *out_imm, uint32_t pc, bool is_branch) {
+    if (is_label(immStr)) {
+        *out_imm = resolve_label(immStr, pc, is_branch);
+        if (*out_imm == 0xFFFFFFFF) {
+            return 0;
+        }
+        return 1;
+    }
+    int16_t signed_imm;
+    if (!parse_immediate_signed(immStr, &signed_imm)) {
+        return 0;
+    }
+    *out_imm = (uint32_t)(int16_t)signed_imm;
+    return 1;
+}
+
+int parse_imm_or_label_unsigned(const char *immStr, uint32_t *out_imm, uint32_t max_val, uint32_t pc, bool is_branch) {
+    if (is_label(immStr)) {
+        *out_imm = resolve_label(immStr, pc, is_branch);
+        if (*out_imm == 0xFFFFFFFF) {
+            return 0;
+        }
+        return 1;
+    }
+    uint16_t imm_val;
+    if (!parse_immediate_unsigned(immStr, max_val, &imm_val)) {
+        return 0;
+    }
+    *out_imm = imm_val;
+    return 1;
+}
+
 AssembledOperation assemble_rtype(const Instruction *instruction, const char *asmLine) {
     char instructionStr[10];
     char rdStr[5], rs1Str[5], rs2Str[5];
@@ -285,17 +317,8 @@ AssembledOperation assemble_branch(const Instruction *instruction, const char *a
     }
 
     uint32_t imm;
-    if (is_label(immStr)) {
-        imm = resolve_label(immStr, current_pc, true);
-        if (imm == 0xFFFFFFFF) {
-            return (AssembledOperation){.hasValue = false};
-        }
-    } else {
-        int16_t signed_imm;
-        if (!parse_immediate_signed(immStr, &signed_imm)) {
-            return (AssembledOperation){.hasValue = false};
-        }
-        imm = (uint32_t)(int16_t)signed_imm;
+    if (!parse_imm_or_label_signed(immStr, &imm, current_pc, true)) {
+        return (AssembledOperation){.hasValue = false};
     }
     
     uint32_t insOp = encode_base(instruction);
@@ -318,17 +341,8 @@ AssembledOperation assemble_jal(const Instruction *instruction, const char *asmL
     }
 
     uint32_t imm;
-    if (is_label(immStr)) {
-        imm = resolve_label(immStr, 0, false);
-        if (imm == 0xFFFFFFFF) {
-            return (AssembledOperation){.hasValue = false};
-        }
-    } else {
-        uint16_t imm_val;
-        if (!parse_immediate_unsigned(immStr, 0xFFFF, &imm_val)) {
-            return (AssembledOperation){.hasValue = false};
-        }
-        imm = imm_val;
+    if (!parse_imm_or_label_unsigned(immStr, &imm, 0xFFFF, 0, false)) {
+        return (AssembledOperation){.hasValue = false};
     }
 
     uint32_t insOp = encode_base(instruction);
@@ -353,17 +367,8 @@ AssembledOperation assemble_jalr(const Instruction *instruction, const char *asm
     }
 
     uint32_t imm;
-    if (is_label(immStr)) {
-        imm = resolve_label(immStr, 0, false);
-        if (imm == 0xFFFFFFFF) {
-            return (AssembledOperation){.hasValue = false};
-        }
-    } else {
-        uint16_t imm_val;
-        if (!parse_immediate_unsigned(immStr, 0xFFFF,&imm_val)) {
-            return (AssembledOperation){.hasValue = false};
-        }
-        imm = imm_val;
+    if (!parse_imm_or_label_unsigned(immStr, &imm, 0xFFFF, 0, false)) {
+        return (AssembledOperation){.hasValue = false};
     }
 
     uint32_t insOp = encode_base(instruction);
@@ -406,17 +411,8 @@ AssembledOperation assemble_sys(const Instruction *instruction, const char *asmL
     }
 
     uint32_t imm;
-    if (is_label(immStr)) {
-        imm = resolve_label(immStr, 0, false);
-        if (imm == 0xFFFFFFFF) {
-            return (AssembledOperation){.hasValue = false};
-        }
-    } else {
-        uint16_t imm_val;
-        if (!parse_immediate_unsigned(immStr, 0xFFFF, &imm_val)) {
-            return (AssembledOperation){.hasValue = false};
-        }
-        imm = imm_val;
+    if (!parse_imm_or_label_unsigned(immStr, &imm, 0xFFFF, 0, false)) {
+        return (AssembledOperation){.hasValue = false};
     }
 
     uint32_t insOp = encode_base(instruction);
