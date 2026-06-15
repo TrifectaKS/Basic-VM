@@ -95,3 +95,32 @@ SYS 0xFF
 
 ; Using variable for SYS
 SYS BANK_ADDR
+
+; Stack Operations - PUSH, POP, CALL, RET
+stack_init:
+    ADDI r1, r0, 42          ; Value to save
+    ADDI r2, r0, 100         ; Another value
+
+; Save registers using PUSH
+    PUSH r1
+    PUSH r2
+
+; Modify the values
+    ADDI r1, r0, 0
+    ADDI r2, r0, 0
+
+; Restore registers using POP
+    POP r2
+    POP r1
+
+; Call a subroutine
+    CALL subroutine
+
+; Return from program
+    HALT
+
+subroutine:
+    ; Do some work
+    ADDI r3, r0, 1
+    ADD r1, r1, r3            ; Increment r1
+    RET
