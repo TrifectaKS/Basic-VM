@@ -424,9 +424,7 @@ AssembledOperation assemble_sys(const Instruction *instruction, const char *asmL
 
 AssembledOperation assemble_nop(const Instruction *instruction, const char *asmLine) {
     (void)asmLine;
-    uint32_t insOp = 0;
-    insOp |= (instruction->funct4& 0xF) << 8;
-    return (AssembledOperation){.value = insOp, .hasValue = true};
+    return (AssembledOperation){.value = encode_base(instruction), .hasValue = true};
 }
 
 int is_reserved_register(const char *regStr) {
