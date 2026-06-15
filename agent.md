@@ -56,6 +56,45 @@ SW r1, r2, CONFIG_VAL    ; Variables work in all immediate fields
 - **Case insensitive**: `BANK_REG` and `bank_reg` refer to the same variable
 - **Error on duplicate**: Duplicate variable definitions produce an error
 
+## Signed vs Unsigned Immediates
+
+The choice between signed and unsigned immediates is determined by **instruction type**, not by special syntax in the assembly code.
+
+### Unsigned Instructions
+These use `parse_immediate_unsigned()` and accept values from `0` to `max_value`:
+- **I-type**: ADDI, SUBI, MULI, DIVI, ANDI, ORI, XORI, SLLI, SRLI
+- **Stores**: SB, SH, SW
+- **Loads**: LW, LH, LB
+- **JALR**
+- **LUI/AUIPC**: 16-bit immediates (0 to 0xFFFF)
+- **SYS**: 8-bit immediates (0 to 0xFF)
+- **CALL**: 20-bit immediates (0 to 0xFFFFF)
+
+Example:
+```asm
+ADDI r1, r2, 0xFFF     ; Unsigned 12-bit
+LUI r1, 0x1234         ; Unsigned 16-bit
+SYS 0xFF                ; Unsigned 8-bit
+```
+
+### Signed Instructions
+These use `parse_immediate_signed()` and accept values from `-2048` to `2047`:
+- **Branches**: BEQ, BNE, BLT, BGT, BLE, BGE
+
+Example:
+```asm
+BEQ r1, r2, -10         ; Signed branch offset
+BLT r1, r2, loop        ; Label-based branch (resolved as signed offset)
+```
+
+### How It Works
+The assembler automatically selects the appropriate parser based on the instruction:
+1. Instruction type is determined from the opcode
+2. For branches: `parse_immediate_signed()` is called via `parse_imm_or_label_signed()`
+3. For others: `parse_immediate_unsigned()` is called via `parse_imm_or_label_unsigned()`
+
+**Note**: When using labels in branch instructions, the assembler calculates the signed PC-relative offset automatically.
+
 ## Key Files
 | File | Purpose |
 |------|---------|
